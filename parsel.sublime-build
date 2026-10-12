@@ -1,5 +1,0 @@
-{
-	"cmd": ["parsel.py"],
-	"selector": "source.parsel",
-	"interactive": true,
-}

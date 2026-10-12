@@ -1,0 +1,15 @@
+# this file is required by modules.py
+# it controls what modules are pre-loaded into mapple
+
+# key: name in the module
+# value: what to bind as
+
+[filesystem.py]
+Fs=Fs
+
+[object.py]
+Object=Object
+
+[runtime.py]
+Runtime=Runtime
+

@@ -1,0 +1,5 @@
+{
+	"cmd": ["mapple", "$file"],
+	"selector": "source.mapple",
+	"interactive": true,
+}

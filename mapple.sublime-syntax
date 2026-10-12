@@ -1,25 +1,25 @@
 %YAML 1.2
----
-name: NovaScript
+
+name: MappleScript
 file_extensions:
-  - nova
-scope: source.nova
-first_line_match: '^#!.*\\bnova.py\\b'
+  - mapple
+scope: source.mapple
+first_line_match: '^#!.*\\bmapple.py\\b'
 
 contexts:
   main:
     # Captures: 1=#!, 2=path/env, 3=interpreter
-    - match: '^(#!)((?:.*/)?(?:env\s+)?)(nova.py)'
+    - match: '^(#!)((?:.*/)?(?:env\s+)?)(mapple.py)'
       captures:
         1: punctuation.definition.comment.shebang
         2: comment.line.shebang.path
-        3: constant.language.interpreter.nova
+        3: constant.language.interpreter.mapple
     # Captures: 1=#!, 2=path/env, 3=interpreter
     - match: '^(#!)((?:.*/)?(?:env\s+)?)([a-zA-Z][a-zA-Z_]+)'
       captures:
         1: punctuation.definition.comment.shebang
         2: comment.line.shebang.path
-        3: constant.language.interpreter.nova
+        3: constant.language.interpreter.mapple
 
     - include: comments
     - include: strings
@@ -38,163 +38,163 @@ contexts:
     - include: class
 
     - match: \b[a-zA-Z_]\w*\b
-      scope: variable.other.nova
+      scope: variable.other.mapple
 
 
   class:
     - match: \b(class|record|inherits|static|property|Base)\b
-      scope: keyword.declaration.nova
+      scope: keyword.declaration.mapple
 
   comments:
     - match: '//.*$'
-      scope: comment.line.double-slash.nova
+      scope: comment.line.double-slash.mapple
     - match: '/\*'
-      scope: comment.block.nova
+      scope: comment.block.mapple
       push:
-        - meta_scope: comment.block.nova
+        - meta_scope: comment.block.mapple
         - match: '.*\*/'
           pop: true
         - match: '.+'
 
   strings:
     - match: '"'
-      scope: punctuation.definition.string.begin.nova
+      scope: punctuation.definition.string.begin.mapple
       push: double_quoted_string
     - match: "'"
-      scope: punctuation.definition.string.begin.nova
+      scope: punctuation.definition.string.begin.mapple
       push: single_quoted_string
     - match: "`"
-      scope: punctuation.definition.string.begin.nova
+      scope: punctuation.definition.string.begin.mapple
       push: template_string
 
   double_quoted_string:
-    - meta_scope: string.quoted.double.nova
+    - meta_scope: string.quoted.double.mapple
     - match: '\\.'
-      scope: constant.character.escape.nova
+      scope: constant.character.escape.mapple
     - match: '"'
-      scope: punctuation.definition.string.end.nova
+      scope: punctuation.definition.string.end.mapple
       pop: true
 
   single_quoted_string:
-    - meta_scope: string.quoted.single.nova
+    - meta_scope: string.quoted.single.mapple
     - match: '\\.'
-      scope: constant.character.escape.nova
+      scope: constant.character.escape.mapple
     - match: "'"
-      scope: punctuation.definition.string.end.nova
+      scope: punctuation.definition.string.end.mapple
       pop: true
   template_string:
     - match: "`"
-      scope: punctuation.definition.string.end.nova
+      scope: punctuation.definition.string.end.mapple
       pop: true
   numbers:
     # hex numbers: 0xFF, 0xDEAD_BEEF
     - match: \b0[xX][0-9a-fA-F_]+\b
-      scope: constant.numeric.hex.nova
+      scope: constant.numeric.hex.mapple
 
     # decimal / float
     - match: \b-?\d+(\.\d+)?\b
-      scope: constant.numeric.nova
+      scope: constant.numeric.mapple
 
   keywords:
     # Declarations
     - match: \b(var|const|private|new|assert|local|with|func|return|define|export|unpack|compact)\b
-      scope: keyword.declaration.nova
+      scope: keyword.declaration.mapple
       # with <something> as <something else> do ... end
     - match: \bas\b\s+(\w+)
       captures:
-        1: entity.name.label.nova
-      scope: keyword.declaration.nova
+        1: entity.name.label.mapple
+      scope: keyword.declaration.mapple
 
 
     # Control flow
     - match: \b(for|break|continue|while|until|do|in|end|else|elseif|if|test|failed|defer)\b
-      scope: keyword.control.flow.nova
+      scope: keyword.control.flow.mapple
 
     # Types
     # like: var x number
     # type Entity = {move:function}
     - match: \b(string|number|int|float|function|bool|void)\b
-      scope: storage.type.nova
+      scope: storage.type.mapple
 
     # builtin
     - match: \b(undefined|nil|NaN)\b
-      scope: constant.language.nova
+      scope: constant.language.mapple
 
   namespace_definition:
     - match: \bscope\b\s+(\w+)
       captures:
-        1: entity.name.namespace.nova
-      scope: keyword.declaration.nova
+        1: entity.name.namespace.mapple
+      scope: keyword.declaration.mapple
   using_stmt:
     # using [module.a, module.b, ...] | using {v: 24}
     - match: "\\b(using)\\b\\s*(\\[|{)"
       captures:
-        1: keyword.declaration.nova
-        2: punctuation.section.brackets.begin.nova
+        1: keyword.declaration.mapple
+        2: punctuation.section.brackets.begin.mapple
       push:
-        - meta_scope: meta.using.nova
+        - meta_scope: meta.using.mapple
         - include: using_stmt_array
 
     # using module.name.or.more
     - match: "\\b(using)\\b\\s+([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)"
       captures:
-        1: keyword.declaration.nova
-        2: entity.name.namespace.nova
+        1: keyword.declaration.mapple
+        2: entity.name.namespace.mapple
 
   using_stmt_array:
-    - meta_content_scope: meta.using.list.nova
+    - meta_content_scope: meta.using.list.mapple
     - match: "\\]"
-      scope: punctuation.section.brackets.end.nova
+      scope: punctuation.section.brackets.end.mapple
       pop: true
     - match: "\\s*,\\s*"
-      scope: punctuation.separator.comma.nova
+      scope: punctuation.separator.comma.mapple
     - match: "([A-Za-z_]\\w*(?:\\.[A-Za-z_]\\w*)*)"
       captures:
-        1: entity.name.namespace.nova
+        1: entity.name.namespace.mapple
     - match: "\\s+"
-      scope: text.whitespace.nova
+      scope: text.whitespace.mapple
     - match: "."
-      scope: invalid.illegal.nova
+      scope: invalid.illegal.mapple
 
 
   function_definitions:
     - match: \bfunc\b\s+(\w+)
       captures:
-        1: entity.name.function.nova
-      scope: keyword.declaration.function.nova
+        1: entity.name.function.mapple
+      scope: keyword.declaration.function.mapple
 
   function_calls:
     - match: \b[a-zA-Z_]\w*(?=\s*\()
-      scope: entity.name.function.nova
+      scope: entity.name.function.mapple
 
   decorators:
     - match: \@(\w+)
       captures:
-        1: entity.name.function.nova
+        1: entity.name.function.mapple
 
   custom_types:
     - match: \bdefine\b\s+(\w+)
       captures:
-        1: entity.name.type.nova
-      scope: keyword.declaration.nova
+        1: entity.name.type.mapple
+      scope: keyword.declaration.mapple
 
   enum_definition:
     # enum <name> { <values> }
     - match: \benum\b
-      scope: keyword.declaration.nova
+      scope: keyword.declaration.mapple
 
   builtins:
     - match: \b(true|false)\b
-      scope: constant.language.nova
+      scope: constant.language.mapple
 
-  types: # the "keyword.declaration.nova" is just here because i don't know what else to label it as
+  types: # the "keyword.declaration.mapple" is just here because i don't know what else to label it as
     - match: \b(matches|strict|default)\b
       captures:
-        1: keyword.declaration.nova
-      scope: keyword.declaration.nova
+        1: keyword.declaration.mapple
+      scope: keyword.declaration.mapple
 
   operators:
     - match: ==|!=|<=|>=|\+=|between|-=|\*=|/=|&&|\|\||[=+\-*/<>!]
-      scope: keyword.operator.nova
+      scope: keyword.operator.mapple
     - match: '[\(\)\[\]\{\}\.,:]'
-      scope: punctuation.separator.nova
+      scope: punctuation.separator.mapple

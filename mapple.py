@@ -3,21 +3,20 @@
 import argparse
 import sys
 
-from novascript.globals import init_globals
-from novascript.nodes import NovaError
-from novascript.runtime import Interpreter
+from mapple.nodes import NovaError
+from mapple.runtime import Interpreter
 
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="nova",
-        description="Nova programming language interpreter",
+        prog="Mapple",
+        description="Mapple programming language interpreter",
     )
 
     parser.add_argument(
         "script",
         nargs="?",
-        help="Nova source file (or '-' for stdin)",
+        help="Mapple source file (or '-' for stdin)",
     )
     parser.add_argument(
         "-d",
@@ -43,7 +42,6 @@ def main():
         filename = args.script
 
     interp = Interpreter(source, filename)
-    init_globals(interp, interp.globals)
     if args.dump:
         from pprint import pprint
 

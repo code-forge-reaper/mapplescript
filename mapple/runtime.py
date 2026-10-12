@@ -1265,12 +1265,18 @@ class Interpreter:
                     expr,
                     f"List/dict index must be a number or string. Got: {type(index).__name__}",
                 )
+
+            # TODO: instead of whatever we're doing here,
+            ## we should check if it is indexable and index is number, if it is,
+            ## we should check length, and see if it can actually get the value
+            ## otherwise, do what lua does
             try:
                 return arr[index]
             except (IndexError, KeyError):
-                raise NovaError(
-                    expr, f"Index/key '{index}' out of bounds or not found for object."
-                )
+                return None
+                #raise NovaError(
+                #    expr, f"Index/key '{index}' out of bounds or not found for object."
+                #)
 
         elif expr.type == "PropertyAccess":
             obj = self.evaluate_expr(expr.object, env)
@@ -1317,7 +1323,8 @@ class Interpreter:
             elif hasattr(obj, expr.property):
                 return getattr(obj, expr.property)
 
-            raise NovaError(expr, f"Property '{expr.property}' not found on object.")
+            return None
+            #raise NovaError(expr, f"Property '{expr.property}' not found on object.")
 
         elif expr.type == "ArrayLiteral":
             return [self.evaluate_expr(element, env) for element in expr.elements]

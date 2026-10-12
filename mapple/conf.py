@@ -4,6 +4,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 LIBS_PATH = ROOT / "libs"
+FILE_EXTENSION = ".mapple"
 
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(LIBS_PATH))
