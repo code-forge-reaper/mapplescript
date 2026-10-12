@@ -6,6 +6,9 @@ import sys
 from mapple.nodes import MappleError
 from mapple.runtime import Interpreter
 
+# Extension-based standard library
+from modules.modules import setup
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -42,6 +45,8 @@ def main():
         filename = args.script
 
     interp = Interpreter(source, filename)
+    setup(interp, interp.globals)
+
     if args.dump:
         from pprint import pprint
 

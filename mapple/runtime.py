@@ -85,11 +85,6 @@ class Interpreter:
         self._expr_handlers = {}
         self._register_default_handlers()
 
-        # Extension-based standard library
-        from modules.modules import setup
-
-        setup(self, self.globals)
-
     def _register_default_handlers(self):
         """Populate the extensibility registries. Override or extend in subclasses."""
         # Statement handlers (examples – full coverage still lives in execute_stmt)
