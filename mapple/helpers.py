@@ -53,6 +53,6 @@ def dprint(msg: str, node: Token):
     elif _DEBUG_MODE == "Json":
         pprint(" " * node.column + f"- {msg} {node.to_json()}")
     elif _DEBUG_MODE == "Node":
-        print(" " * node.column + node.__str__())
+        print(" " * node.column + str(node))
     else:
         raise ValueError("DEBUG must be 'Dict', 'Json' or 'Node'")
