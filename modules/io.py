@@ -35,3 +35,6 @@ def pprint(*stuff: Any) -> None:
 
 def write(t: Any, to: Any) -> None:
     print(_format(t), file=to)
+
+# Re-export Python's input so it lives with the rest of the IO surface
+input = input

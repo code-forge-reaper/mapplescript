@@ -1,0 +1,3 @@
+[submodule "libs/zcore"]
+	path = libs/zcore
+	url = https://github.com/code-forge-reaper/zcore.git

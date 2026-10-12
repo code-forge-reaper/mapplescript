@@ -170,7 +170,6 @@ def setup(interpreter: Interpreter, globals_env: Environment):
     globals_env.define("json", json)
     globals_env.define("NaN", math.nan)
     globals_env.define("nil", None, True)
-    globals_env.define("input", input)
     globals_env.define("len", len)
     globals_env.define("hex", hex)
     globals_env.define("range", range)
