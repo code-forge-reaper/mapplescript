@@ -1,6 +1,7 @@
 import struct
 import array
 
+
 class Convert:
     @staticmethod
     def toInt(s):
@@ -27,8 +28,8 @@ class Convert:
     def toStr(thing):
         if isinstance(thing, list):
             return "".join(thing)
-        else:
-            return str(thing)
+
+        return str(thing)
 
     @staticmethod
     def toBool(s):

@@ -7,8 +7,15 @@ from .nodes import PropertyHandler
 from .typechecker import check_type
 from .nodes import MappleError
 
+
 def bind_parameters(
-    parameters:list[Any], args:tuple[str], kwargs: dict[str, Any], interpreter: "Interpreter", env: Environment, context_name:str="function", token:Token|None=None  # pyright: ignore[reportUndefinedVariable]
+    parameters: list[Any],
+    args: tuple[str],
+    kwargs: dict[str, Any],
+    interpreter: "Interpreter",
+    env: Environment,
+    context_name: str = "function",
+    token: Token | None = None,  # pyright: ignore[reportUndefinedVariable]
 ) -> dict[Any, Any]:
     """
     Common helper to bind positional + keyword + default + compact parameters.
@@ -96,7 +103,7 @@ class MappleClass:
         self._const_properties = set()  # instance const property names
         self.instance_properties = {}  # name -> PropertyDefinition AST
         self.instance_methods = {}  # name -> MethodDefinition AST
-        self.constructor_def: None|Token = None
+        self.constructor_def: None | Token = None
 
         # Determine the top-most Python root, if any
         self._python_root = self._find_python_root()
@@ -104,7 +111,7 @@ class MappleClass:
     def get_public_instance_members(self, instance):
         result = {}
         # Properties (skip private)
-        for name, prop_def in self.instance_properties.items():
+        for name in self.instance_properties.keys():
             if name not in self._private_properties:
                 value = (
                     instance[name]
@@ -113,7 +120,7 @@ class MappleClass:
                 )
                 result[name] = value
         # Methods (skip private)
-        for name, method_def in self.instance_methods.items():
+        for name in self.instance_methods.keys():
             if name not in self._private_methods:
                 value = (
                     instance[name]
@@ -145,7 +152,9 @@ class MappleClass:
     # ------------------------------------------------------------------
     def instantiate(self, args):
         if self._python_root is not None:
-            instance = self._python_root.__new__(self._python_root)  # pyright: ignore[reportCallIssue]
+            instance = self._python_root.__new__(
+                self._python_root
+            )  # pyright: ignore[reportCallIssue]
             setattr(instance, "__DefiningClass", self)
         else:
             instance = {}
@@ -311,9 +320,9 @@ class MappleClass:
                     interpreter.current_class_stack.pop()
 
         # store the class for access checks
-        bound_method.__DefiningClass = self # pyright: ignore
+        bound_method.__DefiningClass = self  # pyright: ignore
         if method_def.is_private:
-            bound_method.__is_private__ = True # pyright: ignore
+            bound_method.__is_private__ = True  # pyright: ignore
         return bound_method
 
     # ------------------------------------------------------------------
@@ -345,7 +354,9 @@ class MappleClass:
 
                 def super_constructor_call(*super_args):
                     try:
-                        parent_type.__init__(instance, *super_args)
+                        parent_type.__init__(  # pylint: disable=unnecessary-dunder-call
+                            instance, *super_args
+                        )
                     except Exception as e:
                         raise ValueError(
                             f"Error calling superclass Python constructor: {e}",

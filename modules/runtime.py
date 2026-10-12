@@ -1,5 +1,12 @@
+from typing import NoReturn
+
+
 import os
 import sys
+
+
+class MapplePanic(Exception):
+    """Raised when Mapple explicitly panics."""
 
 
 class Runtime:
@@ -16,7 +23,7 @@ class Runtime:
         return dict(os.environ)  # Return a copy of the environment variables
 
     @staticmethod
-    def panic(reason: str, *rest: object):
+    def panic(reason: str, *rest: object) -> NoReturn:
         if rest:
-            reason = reason.format(*rest)  # Pythonic way to format
-        raise Exception(reason)
+            reason = reason.format(*rest)
+        raise MapplePanic(reason)

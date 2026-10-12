@@ -1,4 +1,3 @@
-from . import helpers
 from .typechecker import check_type
 from .nodes import MappleError
 
@@ -85,7 +84,9 @@ class Environment:
 
     def add_deferred(self, stmt):
         if self.locked:
-            raise MappleError(stmt, "Cannot add deferred statement to locked environment")
+            raise MappleError(
+                stmt, "Cannot add deferred statement to locked environment"
+            )
         self.deferred.append(stmt)
 
     def execute_deferred(self, interpreter):

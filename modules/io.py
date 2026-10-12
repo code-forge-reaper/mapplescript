@@ -1,9 +1,10 @@
 """
 This module gives IO stuff to Mapple
 """
-
+import builtins
 from collections.abc import Iterable
 from typing import Any
+
 
 def _format(obj: Any) -> Any:
     # Custom string overload
@@ -30,11 +31,13 @@ def _format(obj: Any) -> Any:
 
     return obj
 
+
 def pprint(*stuff: Any) -> None:
     print(*(_format(x) for x in stuff))
+
 
 def write(t: Any, to: Any) -> None:
     print(_format(t), file=to)
 
-# Re-export Python's input so it lives with the rest of the IO surface
-input = input
+
+binput = builtins.input  # noqa-ish, but pylint-clean

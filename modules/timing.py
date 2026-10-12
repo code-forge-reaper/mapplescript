@@ -1,6 +1,7 @@
 import time
 import datetime
 
+
 class Time:
     @staticmethod
     def now(res="ns"):
@@ -8,12 +9,11 @@ class Time:
 
         if res == "ns":
             return t
-        elif res == "ms":
+        if res == "ms":
             return t / 1_000_000
-        elif res == "sec":
+        if res == "sec":
             return t / 1_000_000_000
-        else:
-            raise ValueError(f"unknown {res=}")
+        raise ValueError(f"unknown {res=}")
 
     @staticmethod
     def str():
@@ -27,9 +27,8 @@ class Time:
     def monotonic(resolution="ns"):
         if resolution == "ns":
             return time.perf_counter_ns()  # High-resolution time in nanoseconds
-        elif resolution == "ms":
+        if resolution == "ms":
             return time.perf_counter_ns() / 1_000_000
-        elif resolution == "sec":
+        if resolution == "sec":
             return time.perf_counter_ns() / 1_000_000_000
-        else:
-            raise ValueError(f"unknown {resolution = }")
+        raise ValueError(f"unknown {resolution = }")

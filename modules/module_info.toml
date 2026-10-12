@@ -34,4 +34,4 @@ Uri = "Uri"
 ["io.py"]
 pprint = "print"
 write = "write"
-input = "input"
+binput = "input"

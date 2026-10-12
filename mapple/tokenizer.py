@@ -481,7 +481,7 @@ class Tokenizer:
 
     # --- Parsing Helpers ---
     def parse_block_until(self, terminators=None):
-        if terminators == None:
+        if terminators is None:
             terminators = []
         statements = []
         while self.current < len(self.tokens):
@@ -613,7 +613,9 @@ class Tokenizer:
                 and self.get_next_token().value == "property"
             ):
                 if is_private:
-                    raise MappleError(self.get_next_token(), "property cannot be private")
+                    raise MappleError(
+                        self.get_next_token(), "property cannot be private"
+                    )
                 self.consume_token()
                 _name = self.consume_expected("identifier")
                 setter = None
@@ -1418,7 +1420,7 @@ class Tokenizer:
                 break
 
             if next_token.value == ".":
-                dot_token = self.consume_token()  # consume "."
+                self.consume_token()  # consume "."
                 prop_token = self.expect_type("identifier")
                 prop_name = prop_token.value
                 self.consume_token()  # consume identifier
@@ -1782,7 +1784,9 @@ class Tokenizer:
             self.expect_token(")")
             self.consume_token()
         elif token.value == "compact":
-            raise MappleError(token, "cannot use 'compact' here, did you mean 'unpack'?")
+            raise MappleError(
+                token, "cannot use 'compact' here, did you mean 'unpack'?"
+            )
         else:
             raise MappleError(token, f"Unexpected token: {token.value}")
 

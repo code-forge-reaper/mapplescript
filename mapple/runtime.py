@@ -8,7 +8,6 @@ from .mappleenv import Environment
 from .mappleclass import MappleClass
 from .helpers import Proxy, dprint
 from .nodes import *
-import os
 import sys
 import pathlib
 from . import conf
@@ -88,6 +87,7 @@ class Interpreter:
 
         # Extension-based standard library
         from modules.modules import setup
+
         setup(self, self.globals)
 
     def _register_default_handlers(self):
@@ -97,7 +97,7 @@ class Interpreter:
         # ...
         # Expression handlers
         # self._expr_handlers["Literal"] = self._expr_Literal
-        pass
+        return  # not used for anything right now
 
     def _create_callable(
         self, parameters, body, env, name=None, node=None, context_name=None
@@ -187,7 +187,7 @@ class Interpreter:
                 print(
                     f"{err.__class__.__name__}: {err}"
                 )  # trying to print the name and what caused it
-            exit(1)
+            sys.exit(1)
 
     def execute_block(self, statements, env):
         previous_env = self.current_env
@@ -323,7 +323,7 @@ class Interpreter:
                     handled = expression_val["__exit__"](type(e), e, e.__traceback__)
 
                 if not handled:
-                    raise
+                    raise e
             else:
                 if getattr(expression_val, "__exit__", None):
                     expression_val.__exit__(
@@ -883,7 +883,9 @@ class Interpreter:
                 elif op == "%=":
                     final_value_to_assign = current_value % assigned_value
                 else:
-                    raise MappleError(expr, f"Unknown compound assignment operator: {op}")
+                    raise MappleError(
+                        expr, f"Unknown compound assignment operator: {op}"
+                    )
             else:
                 final_value_to_assign = assigned_value
 
@@ -1034,7 +1036,7 @@ class Interpreter:
                     except Exception as e:
                         raise MappleError(
                             expr, f"Error calling overloaded operator '{op}': {e}"
-                        )
+                        ) from e
                 # If no operator overloading found, fall through to normal operations
 
             # Normal binary operations
@@ -1095,16 +1097,20 @@ class Interpreter:
             elif expr.operator == "between":
                 if not isinstance(right, (list, tuple)) or len(right) != 2:
                     raise MappleError(expr, "'between' requires a range [low, high]")
-                return left >= right[0] and left <= right[1]
+                return right[0] <= left <= right[1]
             elif expr.operator == ">=":
                 return left >= right
             elif expr.operator == "->":
                 if not callable(right):
-                    raise MappleError(expr, f"right side of pipe expr must be a function")
+                    raise MappleError(
+                        expr, "right side of pipe expr must be a function"
+                    )
                 return right(left)
             elif expr.operator == "=>":
                 if not callable(right):
-                    raise MappleError(expr, f"right side of pipe expr must be a function")
+                    raise MappleError(
+                        expr, "right side of pipe expr must be a function"
+                    )
                 clone = copy.deepcopy(left)
                 if isinstance(clone, dict):
                     for k, v in clone.items():
@@ -1278,9 +1284,9 @@ class Interpreter:
                 return arr[index]
             except (IndexError, KeyError):
                 return None
-                #raise MappleError(
+                # raise MappleError(
                 #    expr, f"Index/key '{index}' out of bounds or not found for object."
-                #)
+                # )
 
         elif expr.type == "PropertyAccess":
             obj = self.evaluate_expr(expr.object, env)
@@ -1328,7 +1334,7 @@ class Interpreter:
                 return getattr(obj, expr.property)
 
             return None
-            #raise MappleError(expr, f"Property '{expr.property}' not found on object.")
+            # raise MappleError(expr, f"Property '{expr.property}' not found on object.")
 
         elif expr.type == "ArrayLiteral":
             return [self.evaluate_expr(element, env) for element in expr.elements]
@@ -1381,7 +1387,7 @@ class Interpreter:
                     raise MappleError(
                         expr,
                         f"Error instantiating Python class '{expr.class_name}' (resolved to {target_class}): {e}",
-                    )
+                    ) from e
             else:
                 raise MappleError(
                     expr,

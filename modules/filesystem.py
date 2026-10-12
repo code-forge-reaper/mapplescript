@@ -9,7 +9,7 @@ class Fs:
     @staticmethod
     def read(path: PathLike, mode: Literal["str", "byte"] = "str") -> str | bytes:
         p = pathlib.Path(path)
-        return p.read_text() if mode == "str" else p.read_bytes()
+        return p.read_text("utf8") if mode == "str" else p.read_bytes()  # 12
 
     @staticmethod
     def open(path: PathLike):
@@ -18,10 +18,9 @@ class Fs:
     @staticmethod
     def write(path: PathLike, contents: str | Buffer):
         p = pathlib.Path(path)
-        if type(contents) == Buffer:
+        if isinstance(contents, Buffer):
             return p.write_bytes(contents)
-        else:
-            return p.write_text(str(contents))
+        return p.write_text(str(contents), "utf8")  # 23
 
     @staticmethod
     def exists(path: PathLike):
