@@ -1,6 +1,6 @@
 from . import helpers
 from .typechecker import check_type
-from .nodes import NovaError
+from .nodes import MappleError
 
 
 class FuncWrapp:
@@ -85,12 +85,12 @@ class Environment:
 
     def add_deferred(self, stmt):
         if self.locked:
-            raise NovaError(stmt, "Cannot add deferred statement to locked environment")
+            raise MappleError(stmt, "Cannot add deferred statement to locked environment")
         self.deferred.append(stmt)
 
     def execute_deferred(self, interpreter):
         if self.locked:
-            raise NovaError(
+            raise MappleError(
                 None, "Cannot execute deferred statements in locked environment"
             )
         # Execute in reverse order of deferral
@@ -113,27 +113,27 @@ class Environment:
 
     def assign(self, name: str, value, tok):
         if self.locked:
-            raise NovaError(tok, "Cannot assign to variable in locked environment")
+            raise MappleError(tok, "Cannot assign to variable in locked environment")
 
         if name in self.values:
             var = self.values[name]
 
             # Check for constant violation (existing logic)
             if var.const:
-                raise NovaError(tok, f"Cannot re-assign constant variable '{name}'")
+                raise MappleError(tok, f"Cannot re-assign constant variable '{name}'")
 
             check_type(var.type_annotation, value, tok)
             var.value = value
 
         elif self.parent:
             if self.localsOnly:
-                raise NovaError(
+                raise MappleError(
                     tok,
                     f"Cannot modify variable '{name}', since it is not created in this scope",
                 )
             self.parent.assign(name, value, tok)
         else:
-            raise NovaError(tok, f"Undefined variable {name}")
+            raise MappleError(tok, f"Undefined variable {name}")
 
     def get(self, name: str, tok=None):
         if name in self.values:
@@ -142,7 +142,7 @@ class Environment:
             return self.parent.get(name, tok)
         else:
             if tok:
-                raise NovaError(tok, f"Undefined variable {name}")
+                raise MappleError(tok, f"Undefined variable {name}")
             raise Exception(
                 f"Undefined variable {name}"
             )  # Fallback for internal errors without token

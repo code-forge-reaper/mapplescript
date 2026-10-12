@@ -1,5 +1,5 @@
-#!/usr/bin/env nova.py
-//novascript/examples/ppm.nova
+#!/usr/bin/env mapple.py
+//mapplescript/examples/ppm.mapple
 const boxBuilder = load("BoxBuilder")
 const sys = load("sys")
 func ec(s string) = Convert.toBytes(s, "ascii")

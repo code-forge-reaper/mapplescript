@@ -1,4 +1,4 @@
-#!/usr/bin/env nova.py
+#!/usr/bin/env mapple.py
 using load("PyQt6.QtWidgets")
 using load("PyQt6.QtCore")
 using load("PyQt6.QtGui")

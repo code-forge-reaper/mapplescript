@@ -33,8 +33,8 @@ class ContinueFlow(ControlFlow):
         return {"type": "ContinueFlow"}
 
 
-class NovaError(Exception):
-    """Custom error class for NovaScript, including location information."""
+class MappleError(Exception):
+    """Custom error class for MappleScript, including location information."""
 
     def __init__(self, token, user_message=None):
         file = getattr(token, "file", "unknown_file") if token else "unknown_file"
@@ -51,7 +51,7 @@ class NovaError(Exception):
 
     def to_dict(self):
         return {
-            "type": "NovaError",
+            "type": "MappleError",
             "file": self.file,
             "line": self.line,
             "column": self.column,

@@ -1,4 +1,4 @@
-// tests/test_functions.nova — functions, lambdas, return, higher-order
+// tests/test_functions.mapple — functions, lambdas, return, higher-order
 
 func add(a, b)
     return a + b

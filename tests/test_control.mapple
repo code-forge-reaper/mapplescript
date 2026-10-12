@@ -1,4 +1,4 @@
-// tests/test_control.nova — if / while / for / break / continue / switch-style
+// tests/test_control.mapple — if / while / for / break / continue / switch-style
 
 // --- If / elseif / else ---
 var temp = 25

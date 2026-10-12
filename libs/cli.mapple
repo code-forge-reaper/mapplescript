@@ -1,5 +1,5 @@
-// novascript/libs/cli.nova
-// the "py:" prefix just forces novascript to just import the python module
+// mapplescript/libs/cli.mapple
+// the "py:" prefix just forces mapplescript to just import the python module
 // instead of going [local -> "<NS>/libs/" -> python fallback]
 
 const sys = load("py:sys")

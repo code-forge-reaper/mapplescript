@@ -1,7 +1,7 @@
 
 
 from collections.abc import Callable
-from .nodes import NovaError
+from .nodes import MappleError
 BUILTIN_VAR_TYPES: dict[str, object] = {
     "string": str,
     "number": (int, float),
@@ -31,7 +31,7 @@ def check_type(expected, value, token):
     if isinstance(expected, str) and expected.endswith("[]"):
         base_type = expected[:-2]
         if not isinstance(value, list):
-            raise NovaError(
+            raise MappleError(
                 token,
                 f"Type mismatch: expected array type '{expected}', got {type(value).__name__}",
             )
@@ -42,11 +42,11 @@ def check_type(expected, value, token):
     if not custom_type_definition:
         custom_type_definition = CUSTOM_TYPES.get(expected)
         if custom_type_definition is None:
-            raise NovaError(token, f"unknown type definition: {expected}")
+            raise MappleError(token, f"unknown type definition: {expected}")
         check_custom_type(expected, custom_type_definition, value, token)
     else:
         if not isinstance(value, custom_type_definition):
-            raise NovaError(
+            raise MappleError(
                 token,
                 f"Type mismatch: expected {custom_type_definition}, got {type(value).__name__}",
             )
@@ -55,7 +55,7 @@ def check_type(expected, value, token):
 def check_custom_type(expected, custom_type_definition, value, token):
     if custom_type_definition:
         if not isinstance(value, dict):
-            raise NovaError(
+            raise MappleError(
                 token,
                 f"Type mismatch: expected custom type '{expected}', got {type(value).__name__}",
             )
@@ -70,7 +70,7 @@ def check_custom_type(expected, custom_type_definition, value, token):
             missing_list = ""
             for f in missing:
                 missing_list += f"\n- {f.name} ({f.type})"
-            raise NovaError(
+            raise MappleError(
                 token,
                 f"Type mismatch: custom type '{expected}' is missing properties: {missing_list}",
             )

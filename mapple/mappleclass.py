@@ -2,10 +2,10 @@ from typing import Any
 from .nodes import ReturnFlow, Token
 from .helpers import Proxy
 from .helpers import dprint
-from .novaenv import Environment
+from .mappleenv import Environment
 from .nodes import PropertyHandler
 from .typechecker import check_type
-from .nodes import NovaError
+from .nodes import MappleError
 
 def bind_parameters(
     parameters:list[Any], args:tuple[str], kwargs: dict[str, Any], interpreter: "Interpreter", env: Environment, context_name:str="function", token:Token|None=None  # pyright: ignore[reportUndefinedVariable]
@@ -13,7 +13,7 @@ def bind_parameters(
     """
     Common helper to bind positional + keyword + default + compact parameters.
     Returns a dict of {param_name: value} after type checks.
-    Raises NovaError on missing args, duplicates, unexpected kwargs, type errors.
+    Raises MappleError on missing args, duplicates, unexpected kwargs, type errors.
     """
     compact_param = None
     normal_params = []
@@ -42,12 +42,12 @@ def bind_parameters(
     param_names = {p.name for p in parameters}
     for kw_name, kw_val in kwargs.items():
         if kw_name not in param_names:
-            raise NovaError(
+            raise MappleError(
                 token or None,
                 f"Unexpected keyword argument '{kw_name}' in {context_name}",
             )
         if kw_name in values:
-            raise NovaError(
+            raise MappleError(
                 token or None,
                 f"Parameter '{kw_name}' given both positionally and by keyword in {context_name}",
             )
@@ -64,7 +64,7 @@ def bind_parameters(
             if param.default is not None:
                 arg_val = interpreter.evaluate_expr(param.default, env)
             else:
-                raise NovaError(
+                raise MappleError(
                     param,
                     f"Missing argument for parameter '{param.name}' in {context_name}",
                 )
@@ -75,7 +75,7 @@ def bind_parameters(
     return result
 
 
-class NovaClass:
+class MappleClass:
     """
     Redesigned class system with:
     - Support for `const` properties (instance and static)
@@ -86,7 +86,7 @@ class NovaClass:
 
     def __init__(self, name, super_class, interpreter, env):
         self.name = name
-        self.super_class = super_class  # NovaClass or Python type
+        self.super_class = super_class  # MappleClass or Python type
         self.interpreter = interpreter
         self.env = env  # definition environment (lexical parent)
         self.static_members = {"name": name}  # runtime static values
@@ -134,7 +134,7 @@ class NovaClass:
         while cls is not None:
             if isinstance(cls.super_class, type):
                 root = cls.super_class
-            cls = cls.super_class if isinstance(cls.super_class, NovaClass) else None
+            cls = cls.super_class if isinstance(cls.super_class, MappleClass) else None
         return root
 
     def __call__(self, *args):
@@ -151,8 +151,8 @@ class NovaClass:
             instance = {}
             instance["__DefiningClass"] = self
 
-        # Walk the NovaClass hierarchy from the root Python subclass down,
-        # adding all Nova properties and methods.
+        # Walk the MappleClass hierarchy from the root Python subclass down,
+        # adding all Mapple properties and methods.
         self._build_instance_layout(instance)
 
         # Run constructor chain (most derived first, super calls move up)
@@ -164,7 +164,7 @@ class NovaClass:
     # ------------------------------------------------------------------
     def _build_instance_layout(self, instance):
         # Recursively build from superclass first (proper inheritance chain)
-        if isinstance(self.super_class, NovaClass):
+        if isinstance(self.super_class, MappleClass):
             self.super_class._build_instance_layout(instance)
 
         # Track const/private on the instance for runtime checks (dict instances)
@@ -238,7 +238,7 @@ class NovaClass:
                 # Build 'super' object for method calls
                 if super_class:
                     super_obj = {}
-                    if isinstance(super_class, NovaClass):
+                    if isinstance(super_class, MappleClass):
                         for sm_name, sm_def in super_class.instance_methods.items():
 
                             def make_super_method(mdef=sm_def, sname=sm_name):
@@ -281,7 +281,7 @@ class NovaClass:
                                         try:
                                             return method(instance, *args, **kwargs)
                                         except Exception as e:
-                                            raise NovaError(
+                                            raise MappleError(
                                                 None,
                                                 f"Error calling super Python method '{aname}': {e}",
                                             )
@@ -330,7 +330,7 @@ class NovaClass:
 
         # Define 'super' for constructor
         if self.super_class:
-            if isinstance(self.super_class, NovaClass):
+            if isinstance(self.super_class, MappleClass):
                 parent = self.super_class
 
                 def super_constructor_call(*super_args):

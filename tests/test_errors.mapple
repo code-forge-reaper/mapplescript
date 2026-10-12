@@ -1,4 +1,4 @@
-// tests/test_errors.nova — assert, test/failed, raise
+// tests/test_errors.mapple — assert, test/failed, raise
 
 // Successful assert does nothing
 assert true, "should not fire"

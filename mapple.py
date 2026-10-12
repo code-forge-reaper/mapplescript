@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from mapple.nodes import NovaError
+from mapple.nodes import MappleError
 from mapple.runtime import Interpreter
 
 

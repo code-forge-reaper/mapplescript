@@ -1,4 +1,4 @@
-# NovaScript tests
+# MappleScript tests
 
 These are **automated tests**, not language tutorials.
 
@@ -16,18 +16,18 @@ python tests/run_tests.py
 Or run a single file:
 
 ```bash
-python nova.py tests/test_basics.nova
+python mapple.py tests/test_basics.mapple
 ```
 
 ## Layout
 
 | File | Covers |
 |------|--------|
-| `test_basics.nova` | Literals, vars, consts, arithmetic, comparison, logical, bitwise, compound on scalars |
-| `test_arrays_objects.nova` | Arrays, objects/dicts, indexing, nested structures, compound on indexes |
-| `test_index_compound.nova` | Regression for `$name[i] +=` / `-=` / etc. |
-| `test_control.nova` | if/elseif/else, while, for, for-in, break, continue |
-| `test_functions.nova` | Named funcs, recursion, short funcs, closures, higher-order |
-| `test_classes.nova` | class, record, methods, properties |
-| `test_errors.nova` | assert, test/failed, raise |
-| `test_misc.nova` | between, enum, matches, map (`=>`), defer |
+| `test_basics.mapple` | Literals, vars, consts, arithmetic, comparison, logical, bitwise, compound on scalars |
+| `test_arrays_objects.mapple` | Arrays, objects/dicts, indexing, nested structures, compound on indexes |
+| `test_index_compound.mapple` | Regression for `$name[i] +=` / `-=` / etc. |
+| `test_control.mapple` | if/elseif/else, while, for, for-in, break, continue |
+| `test_functions.mapple` | Named funcs, recursion, short funcs, closures, higher-order |
+| `test_classes.mapple` | class, record, methods, properties |
+| `test_errors.mapple` | assert, test/failed, raise |
+| `test_misc.mapple` | between, enum, matches, map (`=>`), defer |

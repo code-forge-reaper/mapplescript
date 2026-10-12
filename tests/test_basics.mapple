@@ -1,4 +1,4 @@
-// tests/test_basics.nova — literals, variables, operators, strings
+// tests/test_basics.mapple — literals, variables, operators, strings
 
 // --- Literals & variables ---
 var n = 42

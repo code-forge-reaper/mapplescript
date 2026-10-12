@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 """
-Minimal test runner for NovaScript.
+Minimal test runner for MappleScript.
 
-Runs every *.nova file in this directory (except this script).
+Runs every *.mapple file in this directory (except this script).
 A test passes if the interpreter exits 0 and does not leave an uncaught error.
 """
 
 from __future__ import annotations
 
-import os
 import sys
 import traceback
 from pathlib import Path
@@ -17,20 +16,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from novascript.globals import init_globals
-from novascript.nodes import NovaError
-from novascript.runtime import Interpreter
+from mapple.nodes import MappleError
+from mapple.runtime import Interpreter
 
 
 def run_one(path: Path) -> tuple[bool, str]:
     source = path.read_text(encoding="utf-8")
     interp = Interpreter(source, str(path))
-    init_globals(interp, interp.globals)
     try:
         interp.interpret()
         return True, "OK"
-    except NovaError as e:
-        return False, f"NovaError: {e}"
+    except MappleError as e:
+        return False, f"MappleError: {e}"
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
         if code == 0:
@@ -42,9 +39,9 @@ def run_one(path: Path) -> tuple[bool, str]:
 
 def main() -> int:
     tests_dir = Path(__file__).resolve().parent
-    files = sorted(tests_dir.glob("test_*.nova"))
+    files = sorted(tests_dir.glob("test_*.mapple"))
     if not files:
-        print("No test_*.nova files found.")
+        print("No test_*.mapple files found.")
         return 1
 
     passed = 0

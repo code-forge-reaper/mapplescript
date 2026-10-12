@@ -1,3 +1,5 @@
+from urllib.parse import unquote, quote
+
 class Uri:
     @staticmethod
     def decode(s):

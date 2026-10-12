@@ -1,4 +1,4 @@
-// novascript/examples/server.nova
+// mapplescript/examples/server.mapple
 
 // i'll turn this into a server framework eventualy
 const sock = load("socket")
@@ -25,7 +25,7 @@ i know this because **i made the fucking language**
 
 > echo 'print("this
   multi-line
-  string".split("\n"))' | nova.py -
+  string".split("\n"))' | mapple.py -
 ['this', 'multi-line', 'string']
 */
 

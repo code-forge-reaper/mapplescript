@@ -1,4 +1,4 @@
-// novascript/libs/BoxBuilder
+// mapplescript/libs/BoxBuilder
 // this is the most hacky lib i ever made
 //
 // extensible box drawing. everything the library does is a "handler":
@@ -19,7 +19,7 @@ const sys  = load("py:sys")
 my entire reason for making this, is for a stupid bit in a web story i was writting,
 it was meant for like, one, maybe two scenes, that's it
 (that's also why half the math looks drunkinly put toggether).
-Just gonna leave this in novascript's included lib so i can re-use it sometime later.
+Just gonna leave this in mapplescript's included lib so i can re-use it sometime later.
 */
 
 
@@ -30,7 +30,7 @@ define Handler = {
     render: function
 }
 
-// nova validates against `Handler` on assignment.
+// mapple validates against `Handler` on assignment.
 // keys are ints; use InstrType.* or your own.
 export const Api_Handlers = {}
 

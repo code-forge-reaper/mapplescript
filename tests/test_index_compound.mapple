@@ -1,4 +1,4 @@
-// tests/test_index_compound.nova — focused coverage for the $name[i] op= fix
+// tests/test_index_compound.mapple — focused coverage for the $name[i] op= fix
 
 // Basic list compound ops
 var a = [100, 200, 300]

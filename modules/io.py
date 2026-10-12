@@ -3,14 +3,14 @@ This module gives IO stuff to Mapple
 """
 
 from collections.abc import Iterable
-from mapple.runtime import Interpreter
+from typing import Any
 
-def _format(obj):
+def _format(obj: Any) -> Any:
     # Custom string overload
     if isinstance(obj, dict) and "__Str" in obj:
         return obj["__Str"]()
 
-    # NovaScript object instance
+    # MappleScript object instance
     if isinstance(obj, dict):
         if "__DefiningClass" in obj:
             cls = obj["__DefiningClass"]
@@ -30,8 +30,8 @@ def _format(obj):
 
     return obj
 
-def pprint(*stuff):
+def pprint(*stuff: Any) -> None:
     print(*(_format(x) for x in stuff))
 
-def init(interpreter: Interpreter, globals_env: Environment):
-    ...
+def write(t: Any, to: Any) -> None:
+    print(_format(t), file=to)

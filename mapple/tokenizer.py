@@ -110,7 +110,7 @@ class Tokenizer:
                     i += 2
                     col += 2
                 else:
-                    raise NovaError(
+                    raise MappleError(
                         Token("error", "Unterminated comment", file, line, col),
                         "Unterminated multi-line comment",
                     )
@@ -189,7 +189,7 @@ class Tokenizer:
                         col += 1
 
                     if not digits:
-                        raise NovaError(
+                        raise MappleError(
                             Token("error", "Invalid numeric literal", file, line, col),
                             "Invalid numeric literal",
                         )
@@ -226,7 +226,7 @@ class Tokenizer:
                 # decimal / float (with underscores, no trailing dot)
                 int_part = collect_digits("0123456789")  # integer part mandatory
                 if source[i].isalpha():
-                    raise NovaError(
+                    raise MappleError(
                         Token("error", "Invalid integer", file, line, col),
                         "This is not a valid integer",
                     )
@@ -237,14 +237,14 @@ class Tokenizer:
                     # fractional part must contain at least one digit (underscores allowed but must resolve to digits)
                     try:
                         frac_part = collect_digits("0123456789")
-                    except NovaError as e:
+                    except MappleError as e:
                         # collect_digits raised because no digits found -> that's a trailing dot
-                        raise NovaError(
+                        raise MappleError(
                             Token("error", "Invalid numeric literal", file, line, col),
                             "Trailing dot in numeric literal",
                         ) from e
                     if source[i].isalpha():
-                        raise NovaError(
+                        raise MappleError(
                             Token("error", "Invalid float", file, line, col),
                             "This is not a valid float",
                         )
@@ -286,7 +286,7 @@ class Tokenizer:
                     if c == "\\":
                         i += 1
                         if i >= length:
-                            raise NovaError(
+                            raise MappleError(
                                 Token("error", "Unterminated escape", file, line, col),
                                 "Unterminated escape sequence",
                             )
@@ -312,7 +312,7 @@ class Tokenizer:
                         elif esc in string_escapes:
                             value.append(string_escapes[esc])
                         else:
-                            raise NovaError(
+                            raise MappleError(
                                 Token(
                                     "error", "Invalid escape sequence", file, line, col
                                 ),
@@ -338,7 +338,7 @@ class Tokenizer:
                     i += 1
 
                 if i >= length or source[i] != quote:
-                    raise NovaError(
+                    raise MappleError(
                         Token("error", "Unterminated string", file, line, col),
                         "Unterminated string literal",
                     )
@@ -362,7 +362,7 @@ class Tokenizer:
                     tokens.append(Token("identifier", id_str, file, line, start_col))
                 continue
 
-            raise NovaError(
+            raise MappleError(
                 Token("error", char, file, line, col), f"Unexpected character: {char}"
             )
 
@@ -381,7 +381,7 @@ class Tokenizer:
     def expect_type(self, type_str):
         token = self.get_next_token()
         if not token or token.type != type_str:
-            raise NovaError(
+            raise MappleError(
                 token,
                 f"Expected token type {type_str}, got {token if token else 'EOF'}",
             )
@@ -398,11 +398,11 @@ class Tokenizer:
                 if self.current > 0
                 else Token("EOF", "EOF", self.file, 1, 1)
             )
-            raise NovaError(last_token, f"Expected token '{value}', got EOF")
+            raise MappleError(last_token, f"Expected token '{value}', got EOF")
         # Must be an operator (or keyword) with exact value; never match
         # a string/number/identifier that happens to have the same .value
         if token.type not in ("operator", "keyword") or token.value != value:
-            raise NovaError(token, f"Expected token '{value}', got {token.value}")
+            raise MappleError(token, f"Expected token '{value}', got {token.value}")
         return token
 
     def is_token(self, value, types=("operator",)):
@@ -492,7 +492,7 @@ class Tokenizer:
                     if self.current > 0
                     else Token("EOF", "EOF", self.file, 1, 1)
                 )
-                raise NovaError(last_token, "Unexpected end of input")
+                raise MappleError(last_token, "Unexpected end of input")
             if (token.type == "keyword" and token.value in terminators) or (
                 token.type == "operator" and token.value in terminators
             ):
@@ -553,7 +553,7 @@ class Tokenizer:
 
                 elif member_token.type == "keyword" and member_token.value == "private":
                     if is_static:
-                        raise NovaError(
+                        raise MappleError(
                             member_token, "Cannot have a private static method/variable"
                         )
                     self.consume_token()  # consume 'private'
@@ -613,7 +613,7 @@ class Tokenizer:
                 and self.get_next_token().value == "property"
             ):
                 if is_private:
-                    raise NovaError(self.get_next_token(), "property cannot be private")
+                    raise MappleError(self.get_next_token(), "property cannot be private")
                 self.consume_token()
                 _name = self.consume_expected("identifier")
                 setter = None
@@ -621,7 +621,7 @@ class Tokenizer:
                 p = [self._parse_statement(), self._parse_statement()]
                 for node in p:
                     if node.type != "FuncDecl":
-                        raise NovaError(
+                        raise MappleError(
                             node, "only functions are allowed in this context"
                         )
                     if node.name == "set":
@@ -629,10 +629,10 @@ class Tokenizer:
                     elif node.name == "get":
                         getter = node
                     else:
-                        raise NovaError(node, "only 'set' and 'get' are allowed")
+                        raise MappleError(node, "only 'set' and 'get' are allowed")
 
                 if not setter or not getter:
-                    raise NovaError(node, "Expected a getter and setter")
+                    raise MappleError(node, "Expected a getter and setter")
                 body.append(
                     PropertyHandler(
                         _name.value,
@@ -669,13 +669,13 @@ class Tokenizer:
                     )
                 )
             else:
-                raise NovaError(
+                raise MappleError(
                     member_token,
                     f"Unexpected token in class body: {member_token.value}",
                 )
 
         # if not has_initializer:
-        #     raise NovaError(
+        #     raise MappleError(
         #         class_token, "this class has no `init` initializer function"
         #     )
 
@@ -717,7 +717,7 @@ class Tokenizer:
                 if self.current > 0
                 else Token("EOF", "EOF", self.file, 1, 1)
             )
-            raise NovaError(last_token, "Unexpected end of input")
+            raise MappleError(last_token, "Unexpected end of input")
 
         return self._builtinHandler(token)
 
@@ -789,7 +789,7 @@ class Tokenizer:
                     # print(t)
                     tt = CUSTOM_TYPES.get(t.value)
                     if tt is None:
-                        raise NovaError(t, f"Unknown type '{t.value}'")
+                        raise MappleError(t, f"Unknown type '{t.value}'")
                     for k in tt.properties:
                         if not k in properties:
                             properties.append(k)
@@ -828,7 +828,7 @@ class Tokenizer:
                             var_annotation_type
                         )
                     else:
-                        raise NovaError(
+                        raise MappleError(
                             self.get_next_token(),
                             f"not a type: {self.get_next_token()}\n\ntypes: {BUILTIN_VAR_TYPES = }\n{CUSTOM_TYPES = }",
                         )
@@ -863,7 +863,7 @@ class Tokenizer:
                             var_annotation_type
                         )
                     else:
-                        raise NovaError(
+                        raise MappleError(
                             self.get_next_token(),
                             f"not a type: {self.get_next_token()}\n\ntypes: {BUILTIN_VAR_TYPES = }\n{CUSTOM_TYPES = }",
                         )
@@ -935,7 +935,7 @@ class Tokenizer:
                     and self.get_next_token().value == "default"
                 ):
                     if strict:
-                        raise NovaError(
+                        raise MappleError(
                             self.consume_token(),
                             "Cannot use 'default' when strict is enabled",
                         )
@@ -1117,7 +1117,7 @@ class Tokenizer:
                 self.consume_token()
                 if_condition = self.parse_expression()
                 if if_condition.type in ["AssignmentExpr"]:
-                    raise NovaError(
+                    raise MappleError(
                         if_condition, "you cannot do assinment ops in 'if' condition"
                     )
                 then_block = self.parse_block_until(["else", "elseif", "end"])
@@ -1133,7 +1133,7 @@ class Tokenizer:
                     self.consume_token()
                     elseif_condition = self.parse_expression()
                     if elseif_condition.type in ["AssignmentExpr"]:
-                        raise NovaError(
+                        raise MappleError(
                             if_condition,
                             "you cannot do assinment ops in 'elseif' condition",
                         )
@@ -1234,7 +1234,7 @@ class Tokenizer:
             if not isinstance(
                 expr, (Identifier, PropertyAccess, ArrayAccess, ArrayLiteral)
             ):
-                raise NovaError(
+                raise MappleError(
                     expr, f"Invalid assignment target: Cannot assign to {expr.type}"
                 )
 
@@ -1488,7 +1488,7 @@ class Tokenizer:
                 annotation_type = None
                 if self.get_next_token() and self.get_next_token().type == "identifier":
                     if is_compact:
-                        raise NovaError(token, "'compact' does not support this")
+                        raise MappleError(token, "'compact' does not support this")
                     type_token = self.get_next_token()
                     if (
                         type_token.value in BUILTIN_VAR_TYPES
@@ -1501,11 +1501,11 @@ class Tokenizer:
                 default_expr = None
                 if self.is_token("="):
                     if is_compact:
-                        raise NovaError(token, "'compact' does not support this")
+                        raise MappleError(token, "'compact' does not support this")
                     self.consume_token()
                     default_expr = self.parse_expression()
                     if annotation_type:
-                        raise NovaError(
+                        raise MappleError(
                             token,
                             "Cannot have both explicit type annotation and a default value. Consider removing the type annotation to allow type inference from the default value.",
                         )
@@ -1605,7 +1605,7 @@ class Tokenizer:
                 if self.current > 0
                 else Token("EOF", "EOF", self.file, 1, 1)
             )
-            raise NovaError(last_token, "Unexpected end of input")
+            raise MappleError(last_token, "Unexpected end of input")
 
         if token.type == "number" or token.type == "string":
             self.consume_token()
@@ -1633,7 +1633,7 @@ class Tokenizer:
                     break
                 key_token = self.get_next_token()
                 if key_token.type not in ["identifier", "string"]:
-                    raise NovaError(
+                    raise MappleError(
                         key_token,
                         "Expected identifier or string as object key, got {}({})".format(
                             key_token.type, key_token.value
@@ -1677,14 +1677,14 @@ class Tokenizer:
             while self.get_next_token() and not self.is_token("}"):
                 v = self.expect_type("identifier").value
                 if v in values:
-                    raise NovaError(token, "Enum values must be unique.")
+                    raise MappleError(token, "Enum values must be unique.")
                 values.append(v)
                 self.consume_token()
             self.expect_token("}")
             self.consume_token()
 
             if len(values) < 1:
-                raise NovaError(token, "Enum must have at least one value.")
+                raise MappleError(token, "Enum must have at least one value.")
 
             node = EnumDef(values, token.file, token.line, token.column)
 
@@ -1782,8 +1782,8 @@ class Tokenizer:
             self.expect_token(")")
             self.consume_token()
         elif token.value == "compact":
-            raise NovaError(token, "cannot use 'compact' here, did you mean 'unpack'?")
+            raise MappleError(token, "cannot use 'compact' here, did you mean 'unpack'?")
         else:
-            raise NovaError(token, f"Unexpected token: {token.value}")
+            raise MappleError(token, f"Unexpected token: {token.value}")
 
         return node

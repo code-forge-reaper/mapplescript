@@ -2,7 +2,7 @@ from pprint import pprint
 import os
 
 from .tokenizer import Token
-from .nodes import NovaError
+from .nodes import MappleError
 
 
 class Proxy:
@@ -21,7 +21,7 @@ class Proxy:
 
     def get(self):
         if not self._get:
-            raise NovaError(None, "Property has no getter.")
+            raise MappleError(None, "Property has no getter.")
         try:
             if self.cls and self.interpreter:
                 self.interpreter.current_class_stack.append(self.cls)
@@ -32,7 +32,7 @@ class Proxy:
 
     def set(self, value):
         if not self._set:
-            raise NovaError(None, "Property has no setter.")
+            raise MappleError(None, "Property has no setter.")
         try:
             if self.cls and self.interpreter:
                 self.interpreter.current_class_stack.append(self.cls)

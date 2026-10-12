@@ -1,4 +1,4 @@
-// tests/test_classes.nova — class, record, methods, properties, new
+// tests/test_classes.mapple — class, record, methods, properties, new
 
 class Point
     var x

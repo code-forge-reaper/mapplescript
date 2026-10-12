@@ -1,4 +1,4 @@
-// tests/test_misc.nova — matches, between, enum, map (=>), defer
+// tests/test_misc.mapple — matches, between, enum, map (=>), defer
 
 // --- between ---
 var count = 25

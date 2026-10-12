@@ -1,11 +1,11 @@
-// novascript/example/example.nova
+// mapplescript/example/example.mapple
 
 // --- 1. Basic Syntax and Variables ---
 
 // Single-line comment
 /*
  * Multi-line comment.
- * This script demonstrates various features of NovaScript.
+ * This script demonstrates various features of MappleScript.
  */
 
 
@@ -13,12 +13,12 @@ const hhelper = load("helperlib")
 
 /*
 Example error message if the lib isn't found:
-[20:19:46] cross@endeavourOS /home/cross/Documents/projects/novascript
+[20:19:46] cross@endeavourOS /home/cross/Documents/projects/mapplescript
 > echo "const np = load('numpy')
   const PIL = load('PIL')
-  print(np, PIL)" | nova.py -
+  print(np, PIL)" | mapple.py -
 Traceback (most recent call last):
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 666, in load
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 666, in load
     result = impLib(py_path)
   File "/usr/lib/python3.14/importlib/__init__.py", line 88, in import_module
     return _bootstrap._gcd_import(name[level:], package, level)
@@ -31,35 +31,35 @@ ModuleNotFoundError: No module named 'numpy'
 During handling of the above exception, another exception occurred:
 
 Traceback (most recent call last):
-  File "/home/cross/bin/nova.py", line 26, in <module>
+  File "/home/cross/bin/mapple.py", line 26, in <module>
     main()
     ~~~~^^
-  File "/home/cross/bin/nova.py", line 21, in main
+  File "/home/cross/bin/mapple.py", line 21, in main
     interpreter.interpret()
     ~~~~~~~~~~~~~~~~~~~~~^^
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 2681, in interpret
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 2681, in interpret
     raise err
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 2673, in interpret
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 2673, in interpret
     self.execute_block(statements, self.globals)
     ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 2688, in execute_block
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 2688, in execute_block
     result = self.execute_stmt(stmt, env)
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 2702, in execute_stmt
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 2702, in execute_stmt
     value = self.evaluate_expr(stmt.initializer, env)
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 3543, in evaluate_expr
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 3543, in evaluate_expr
     return func(*args, **kwargs)
-  File "/home/cross/Documents/projects/novascript/novascript.py", line 670, in load
+  File "/home/cross/Documents/projects/mapplescript/mapplescript.py", line 670, in load
     raise RuntimeError(
     ...<4 lines>...
     )
 RuntimeError: Cannot find module: numpy
-Tried Nova:
-  numpy.nova
-  /dev/numpy.nova
-  /home/cross/Documents/projects/novascript/libs/numpy.nova
+Tried Mapple:
+  numpy.mapple
+  /dev/numpy.mapple
+  /home/cross/Documents/projects/mapplescript/libs/numpy.mapple
 Tried Python import: numpy
 Error: No module named 'numpy'
-[20:19:50] cross@endeavourOS /home/cross/Documents/projects/novascript [0|1]
+[20:19:50] cross@endeavourOS /home/cross/Documents/projects/mapplescript [0|1]
 > yay -S python-numpy
 Sync Explicit (1): python-numpy-2.4.4-1
 🔐 [sudo] password for cross:  ••••••••
@@ -96,7 +96,7 @@ Optional dependencies for python-numpy
     blas-openblas: faster linear algebra
 :: Running post-transaction hooks...
 (1/1) Arming ConditionNeedsUpdate...
-[20:21:35] cross@endeavourOS /home/cross/Documents/projects/novascript
+[20:21:35] cross@endeavourOS /home/cross/Documents/projects/mapplescript
 > yay -S python-pillow
 Sync Explicit (1): python-pillow-12.2.0-1
 resolving dependencies...
@@ -130,20 +130,20 @@ Optional dependencies for python-pillow
     python-defusedxml: for reading XMP tags [installed]
 :: Running post-transaction hooks...
 (1/1) Arming ConditionNeedsUpdate...
-[20:22:04] cross@endeavourOS /home/cross/Documents/projects/novascript
+[20:22:04] cross@endeavourOS /home/cross/Documents/projects/mapplescript
 > echo "const np = load('numpy')
   const PIL = load('PIL')
-  print(np, PIL)" | nova.py -
+  print(np, PIL)" | mapple.py -
 <module 'numpy' from '/usr/lib/python3.14/site-packages/numpy/__init__.py'> <module 'PIL' from '/usr/lib/python3.14/site-packages/PIL/__init__.py'>
-[20:22:15] cross@endeavourOS /home/cross/Documents/projects/novascript
+[20:22:15] cross@endeavourOS /home/cross/Documents/projects/mapplescript
 >
 
 */
 print("hhelper.grid2D(20,20): ", hhelper.grid2D(20,20))
-Logger.info("Starting NovaScript Example!")
+Logger.info("Starting MappleScript Example!")
 
 // Variable declarations with and without type annotations
-var greeting string = "Hello, NovaScript!"
+var greeting string = "Hello, MappleScript!"
 var count = 10
 var isActive bool = true
 var price number = 99.99
@@ -180,7 +180,7 @@ print("Sum:", sum, "Diff:", difference, "Prod:", product, "Quot:", quotient, "Re
 // Comparison
 print("Count > 5:", count > 5)
 print("Price <= 100:", price <= 100)
-print("Greeting == 'Hello, NovaScript!':", greeting == "Hello, NovaScript!")
+print("Greeting == 'Hello, MappleScript!':", greeting == "Hello, MappleScript!")
 print("Is Active != false:", isActive != false)
 
 // Logical
@@ -277,7 +277,7 @@ const Moves = enum {
 using Moves
 const move = [Scisors,Scisors]
 
-// the "do" is here so nova doesn't try to parse a lookup
+// the "do" is here so mapple doesn't try to parse a lookup
 matches move do
     [Rock, Scisors ],
     [Paper, Rock   ],
@@ -404,7 +404,7 @@ person.age = 31 // Modify property
 print("Modified age:", person.age)
 
 // --- 6. Custom Types ---
-// types in nova are literally what ducktyping is
+// types in mapple are literally what ducktyping is
 // "If it walks like a duck and it quacks like a duck, then it must be a duck"
 
 // Define a custom type 'Point'
@@ -645,7 +645,7 @@ blame past me for writting this cursed-ass object literal parser
                     break
                 key_token = self.get_next_token()
                 if key_token.type not in ["identifier", "string"]:
-                    raise NovaError(
+                    raise MappleError(
                         key_token,
                         "Expected identifier or string as object key, got {}({})".format(
                             key_token.type, key_token.value
@@ -724,7 +724,7 @@ end
 (i know this is overkill, but it's either this, or mutating the original dict)
     elif expr.operator == "=>":
         if not callable(right):
-            raise NovaError(expr, f"right side of pipe expr must be a function")
+            raise MappleError(expr, f"right side of pipe expr must be a function")
         clone = copy.deepcopy(left)
         if isinstance(clone, dict):
             for k, v in clone.items():
@@ -733,7 +733,7 @@ end
             for i, v in enumerate(clone):
                 clone[i] = right(v, i)
         else:
-            raise NovaError(expr, "=> only works on arrays or objects")
+            raise MappleError(expr, "=> only works on arrays or objects")
         return clone
 */
 print(stuff)

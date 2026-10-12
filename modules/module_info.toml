@@ -1,15 +1,36 @@
 # this file is required by modules.py
 # it controls what modules are pre-loaded into mapple
 
-# key: name in the module
-# value: what to bind as
+# key: attribute name in the module
+# value: what to bind as in Mapple globals
 
-[filesystem.py]
-Fs=Fs
+["filesystem.py"]
+Fs = "Fs"
 
-[object.py]
-Object=Object
+["object.py"]
+Object = "Object"
 
-[runtime.py]
-Runtime=Runtime
+["runtime.py"]
+Runtime = "Runtime"
 
+["conversion.py"]
+Convert = "Convert"
+
+["inclusion.py"]
+Has = "Has"
+
+["instancing.py"]
+Is = "Is"
+
+["logging.py"]
+Logger = "Logger"
+
+["timing.py"]
+Time = "Time"
+
+["uri.py"]
+Uri = "Uri"
+
+["io.py"]
+pprint = "print"
+write = "write"

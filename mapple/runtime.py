@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from .novaclass import bind_parameters
-from .novaenv import FuncWrapp
+from .mappleclass import bind_parameters
+from .mappleenv import FuncWrapp
 from .typechecker import CUSTOM_TYPES
 from .typechecker import check_type
 from .tokenizer import Tokenizer
-from .novaenv import Environment
-from .novaclass import NovaClass
+from .mappleenv import Environment
+from .mappleclass import MappleClass
 from .helpers import Proxy, dprint
 from .nodes import *
 import os
@@ -86,6 +86,10 @@ class Interpreter:
         self._expr_handlers = {}
         self._register_default_handlers()
 
+        # Extension-based standard library
+        from modules.modules import setup
+        setup(self, self.globals)
+
     def _register_default_handlers(self):
         """Populate the extensibility registries. Override or extend in subclasses."""
         # Statement handlers (examples – full coverage still lives in execute_stmt)
@@ -105,7 +109,7 @@ class Interpreter:
         - Captures the current class context (if any) so nested lambdas can still
           touch private members of the enclosing class.
         - Uses the common bind_parameters helper.
-        - Attaches __nova_ast__ so dynamic method binding continues to work.
+        - Attaches __mapple_ast__ so dynamic method binding continues to work.
         """
         captured_class = (
             self.current_class_stack[-1] if self.current_class_stack else None
@@ -149,20 +153,20 @@ class Interpreter:
         )
         wrapper.__name__ = name if name is not None else str(uuid.uuid4())
         if node is not None:
-            wrapper.__nova_ast__ = node  # pyright: ignore
+            wrapper.__mapple_ast__ = node  # pyright: ignore
         if captured_class is not None:
             wrapper.__DefiningClass = captured_class  # pyright: ignore
         return wrapper
 
     def _check_private_access(self, obj, name, expr):
-        """Raise NovaError if `name` is a private member of `obj` and access is not from inside its class."""
+        """Raise MappleError if `name` is a private member of `obj` and access is not from inside its class."""
         if not isinstance(obj, dict) or "__DefiningClass" not in obj:
-            return  # not a NovaScript instance
+            return  # not a MappleScript instance
         cls = obj["__DefiningClass"]
         if name in cls._private_properties or name in cls._private_methods:
             # allowed only if the current class (top of stack) is exactly this class
             if not self.current_class_stack or self.current_class_stack[-1] is not cls:
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"Private member '{name}' cannot be accessed outside its class",
                 )
@@ -177,7 +181,7 @@ class Interpreter:
             self.globals.execute_deferred(self)
             if self.errorStack:
                 print("\n".join(reversed(self.errorStack)), file=sys.stderr)
-            if isinstance(err, NovaError):
+            if isinstance(err, MappleError):
                 print(f"{err.message}", file=sys.stderr)
             else:
                 print(
@@ -230,7 +234,7 @@ class Interpreter:
                 # For declarations, export the declared name
                 name = inner.name
                 if name in exports_dict:
-                    raise NovaError(stmt, "cannot re-export: {}".format(name))
+                    raise MappleError(stmt, "cannot re-export: {}".format(name))
                 value = env.get(name).value
                 exports_dict[name] = value
 
@@ -242,7 +246,7 @@ class Interpreter:
                         key = prop["key"]
                         val_expr = prop["value"]
                         if key in exports_dict:
-                            raise NovaError(stmt, "cannot re-export: {}".format(key))
+                            raise MappleError(stmt, "cannot re-export: {}".format(key))
                         if val_expr.type == "Identifier":
                             val = env.get(val_expr.name).value
                         else:
@@ -252,16 +256,16 @@ class Interpreter:
                     # export a → export the variable 'a'
                     name = expr.name
                     if name in exports_dict:
-                        raise NovaError(stmt, "cannot re-export: {}".format(name))
+                        raise MappleError(stmt, "cannot re-export: {}".format(name))
                     val = env.get(name).value
                     exports_dict[name] = val
                 else:
-                    raise NovaError(
+                    raise MappleError(
                         stmt, f"Cannot export expression of type {expr.type}"
                     )
 
             else:
-                raise NovaError(stmt, f"Cannot export statement of type {inner.type}")
+                raise MappleError(stmt, f"Cannot export statement of type {inner.type}")
         elif stmt.type == "DeferStmt":
             # To match TypeScript's behavior: statements within a single defer block
             # are executed in FIFO order. Since `execute_deferred` pops from the end
@@ -288,7 +292,7 @@ class Interpreter:
                     return result
             except Exception as e:  # Catch all other Python exceptions
                 catch_env = Environment(env)
-                # If e is a NovaError, use it directly. Otherwise, wrap it.
+                # If e is a MappleError, use it directly. Otherwise, wrap it.
                 catch_env.define(stmt.error_var, e, True)
                 result = self.execute_block(stmt.catch_block, catch_env)
                 if isinstance(result, ControlFlow):
@@ -359,7 +363,7 @@ class Interpreter:
                     return result
 
         elif stmt.type == "ObjectDecl":
-            temp_class = NovaClass(f"__anon_{stmt.name}", None, self, env)
+            temp_class = MappleClass(f"__anon_{stmt.name}", None, self, env)
 
             for member in stmt.body:
                 if member.type == "FuncDecl":
@@ -426,7 +430,7 @@ class Interpreter:
                     temp_class.instance_methods[member.setter.name] = member.setter
 
                 else:
-                    raise NovaError(member, "not supported")
+                    raise MappleError(member, "not supported")
 
             # 4. Instantiate and assign to the variable name provided
             instance = temp_class.instantiate([])
@@ -454,7 +458,7 @@ class Interpreter:
             if not isinstance(list_val, (list, dict)) and not hasattr(
                 list_val, "__iter__"
             ):
-                raise NovaError(
+                raise MappleError(
                     stmt,
                     f"Cannot iterate over non-array type for forEach loop. Got: {type(list_val).__name__}",
                 )
@@ -474,14 +478,14 @@ class Interpreter:
             step = self.evaluate_expr(stmt.step, env) if stmt.step else 1
 
             if not all(isinstance(val, (int, float)) for val in [start, end, step]):
-                raise NovaError(
+                raise MappleError(
                     stmt,
                     f"For loop bounds and step must be numbers. Got start: {type(start).__name__}, end: {type(end).__name__}, step: {type(step).__name__}",
                 )
 
             # Python's range handles step correctly. For float steps, manual loop.
             # Assuming integer steps for now, as floats can lead to precision issues.
-            # If NovaScript intends float steps, this will need adjustment.
+            # If MappleScript intends float steps, this will need adjustment.
             if isinstance(step, float):
                 current_val = start
                 while (step > 0 and current_val <= end) or (
@@ -539,7 +543,7 @@ class Interpreter:
                     return result
 
             if stmt.strict and not matched:
-                raise NovaError(
+                raise MappleError(
                     stmt, f"Switch statement did not match any case for value: {value}"
                 )
 
@@ -585,13 +589,13 @@ class Interpreter:
                     elif hasattr(current_resolved_object, part):
                         next_resolved_part = getattr(current_resolved_object, part)
                     else:
-                        raise NovaError(
+                        raise MappleError(
                             class_def,
                             f"Cannot resolve part '{part}' in superclass path '{class_def.superclass_name}'.",
                         )
 
                     if next_resolved_part is None:
-                        raise NovaError(
+                        raise MappleError(
                             class_def,
                             f"Superclass '{class_def.superclass_name}' part '{part}' not found.",
                         )
@@ -600,45 +604,45 @@ class Interpreter:
 
                 super_class = current_resolved_object
 
-                # Allow NovaClass or Python type/class as superclass
-                if not isinstance(super_class, (NovaClass, type)):
-                    raise NovaError(
+                # Allow MappleClass or Python type/class as superclass
+                if not isinstance(super_class, (MappleClass, type)):
+                    raise MappleError(
                         class_def,
                         f"Superclass '{class_def.superclass_name}' resolved to type {type(super_class).__name__}, which is not a class.",
                     )
 
-            # Pass the resolved super_class to NovaClass
-            nova_class = NovaClass(class_def.name, super_class, self, env)
+            # Pass the resolved super_class to MappleClass
+            mapple_class = MappleClass(class_def.name, super_class, self, env)
 
             # Populate static members, instance properties/methods
             for member in class_def.body:
                 if member.type == "PropertyDefinition":
                     if member.is_private:
-                        nova_class._private_properties.add(member.name)
+                        mapple_class._private_properties.add(member.name)
                     if getattr(member, "is_const", False):
-                        nova_class._const_properties.add(member.name)
+                        mapple_class._const_properties.add(member.name)
                     if member.is_static:
                         prop_value = None
                         if member.initializer:
                             prop_value = self.evaluate_expr(member.initializer, env)
-                        nova_class.static_members[member.name] = prop_value
+                        mapple_class.static_members[member.name] = prop_value
                         if getattr(member, "is_const", False):
-                            nova_class._static_const.add(member.name)
+                            mapple_class._static_const.add(member.name)
                     else:
-                        nova_class.instance_properties[member.name] = member
+                        mapple_class.instance_properties[member.name] = member
                 elif member.type == "PropertyHandler":
-                    nova_class.instance_properties[member.name] = member
+                    mapple_class.instance_properties[member.name] = member
 
                 elif member.type == "MethodDefinition":
                     if member.is_private:
-                        nova_class._private_methods.add(member.name)
+                        mapple_class._private_methods.add(member.name)
                     if member.is_constructor:
-                        nova_class.constructor_def = member
+                        mapple_class.constructor_def = member
                     elif member.is_static:
                         # Wrap static methods using shared bind helper
                         def static_method_wrapper(*args, _member=member, **kwargs):
                             method_env = Environment(env)
-                            method_env.define("self", nova_class.static_members)
+                            method_env.define("self", mapple_class.static_members)
                             bound = bind_parameters(
                                 _member.parameters,
                                 args,
@@ -655,26 +659,26 @@ class Interpreter:
                                 return result.value
                             return None
 
-                        nova_class.static_members[member.name] = static_method_wrapper
+                        mapple_class.static_members[member.name] = static_method_wrapper
                     else:
-                        nova_class.instance_methods[member.name] = member
+                        mapple_class.instance_methods[member.name] = member
                 else:
-                    raise NovaError(member, f"not supported: {member}")
+                    raise MappleError(member, f"not supported: {member}")
 
-            env.define(class_def.name, nova_class)
+            env.define(class_def.name, mapple_class)
         elif stmt.type == "AssertStmt":
             e = self.evaluate_expr(stmt.expression, env)
             if not e:
-                raise NovaError(stmt, f"{stmt.message}")
+                raise MappleError(stmt, f"{stmt.message}")
         elif stmt.type == "UsingStmt":
             # Helper to import members from a dict/Environment/module into env
             def import_members(value):
-                if isinstance(value, NovaClass):
+                if isinstance(value, MappleClass):
                     # Import public static members only
                     for key, val in value.get_public_static_members().items():
                         env.define(key, val)
                 elif isinstance(value, dict) and "__DefiningClass" in value:
-                    # NovaScript instance: import public instance members
+                    # MappleScript instance: import public instance members
                     cls = value["__DefiningClass"]
                     for key, val in cls.get_public_instance_members(value).items():
                         env.define(key, val)
@@ -694,7 +698,7 @@ class Interpreter:
                         if not key.startswith("_"):
                             env.define(key, val)
                 else:
-                    raise NovaError(
+                    raise MappleError(
                         stmt,
                         f"Cannot 'use' value of type {type(value).__name__}. "
                         "Expected a namespace, dict, class, instance, or Python object.",
@@ -714,12 +718,12 @@ class Interpreter:
                         elif hasattr(current, part):
                             current = getattr(current, part)
                         else:
-                            raise NovaError(
+                            raise MappleError(
                                 stmt,
                                 f"Cannot resolve part '{part}' in path '{path_str}'.",
                             )
                         if current is None:
-                            raise NovaError(
+                            raise MappleError(
                                 stmt,
                                 f"Name '{path_str}' part '{part}' not found.",
                             )
@@ -729,7 +733,7 @@ class Interpreter:
                 value = self.evaluate_expr(stmt.name, env)
                 import_members(value)
         else:
-            raise NovaError(stmt, f"Unknown statement type: {stmt.type}")
+            raise MappleError(stmt, f"Unknown statement type: {stmt.type}")
 
     # --- NEW HELPER: Resolves the base object and final key/index for assignment ---
     def resolve_assignment_target(self, target_expr, env):
@@ -742,17 +746,17 @@ class Interpreter:
             index = self.evaluate_expr(target_expr.index, env)
 
             if base_object is None:
-                raise NovaError(target_expr, "Cannot assign to index of None value.")
+                raise MappleError(target_expr, "Cannot assign to index of None value.")
             if not isinstance(base_object, (list, dict)) and not hasattr(
                 base_object, "__setitem__"
             ):  # Python lists/dicts for arrays/objects
                 # print(dir(base_object))
-                raise NovaError(
+                raise MappleError(
                     target_expr,
                     f"Cannot assign to index of non-list/dict: {type(base_object).__name__}",
                 )
             if not isinstance(index, (int, str)):
-                raise NovaError(
+                raise MappleError(
                     target_expr,
                     f"List/dict index must be a number or string for assignment. Got: {type(index).__name__}",
                 )
@@ -763,21 +767,21 @@ class Interpreter:
             key = target_expr.property  # Property name is a string
 
             if base_object is None:
-                raise NovaError(
+                raise MappleError(
                     target_expr, f"Cannot assign property '{key}' of None value."
                 )
 
             # Special case: if the base object is an Environment, we assign to it directly
             if isinstance(base_object, Environment):
                 return {"base": base_object, "final_key": key}
-            # If the base object is a NovaScript instance (a Python dict), assign to its key.
+            # If the base object is a MappleScript instance (a Python dict), assign to its key.
             elif isinstance(base_object, dict):
                 return {"base": base_object, "final_key": key}
             # For other Python objects, assume it's a regular attribute access.
             else:
                 return {"base": base_object, "final_key": key}
         else:
-            raise NovaError(
+            raise MappleError(
                 target_expr, "Invalid assignment target type: " + target_expr.type
             )
 
@@ -834,7 +838,7 @@ class Interpreter:
                     try:
                         current_value = base[final_key]
                     except KeyError as e:
-                        raise NovaError(
+                        raise MappleError(
                             target,
                             f"Cannot read key '{final_key}' for compound assignment: {e}",
                         )
@@ -843,7 +847,7 @@ class Interpreter:
                     try:
                         current_value = base[final_key]
                     except (IndexError, KeyError, TypeError) as e:
-                        raise NovaError(
+                        raise MappleError(
                             target,
                             f"Cannot read index/key '{final_key}' for compound assignment: {e}",
                         )
@@ -851,7 +855,7 @@ class Interpreter:
                     current_value = getattr(base, final_key, None)
                 if isinstance(current_value, Proxy):
                     if not current_value.get:
-                        raise NovaError(
+                        raise MappleError(
                             target, f"Property '{final_key}' has no getter."
                         )
                     current_value = current_value.get()
@@ -864,7 +868,7 @@ class Interpreter:
                     if isinstance(current_value, (int, float)) and not isinstance(
                         assigned_value, (int, float)
                     ):
-                        raise NovaError(
+                        raise MappleError(
                             expr,
                             f"If you wanted to repeat '{assigned_value}' {current_value} times, "
                             f"you'd do '\"{assigned_value}\" * {current_value}'",
@@ -872,14 +876,14 @@ class Interpreter:
                     final_value_to_assign = current_value * assigned_value
                 elif op == "/=":
                     if assigned_value == 0:
-                        raise NovaError(
+                        raise MappleError(
                             expr, "Division by zero in compound assignment."
                         )
                     final_value_to_assign = current_value / assigned_value
                 elif op == "%=":
                     final_value_to_assign = current_value % assigned_value
                 else:
-                    raise NovaError(expr, f"Unknown compound assignment operator: {op}")
+                    raise MappleError(expr, f"Unknown compound assignment operator: {op}")
             else:
                 final_value_to_assign = assigned_value
 
@@ -887,7 +891,7 @@ class Interpreter:
             if isinstance(target, ArrayLiteral):  # destructuring
                 source_array = final_value_to_assign
                 if not isinstance(source_array, list):
-                    raise NovaError(
+                    raise MappleError(
                         target,
                         f"Cannot destructure non-list value. Expected list, got {type(source_array).__name__}.",
                     )
@@ -911,10 +915,10 @@ class Interpreter:
                     base.assign(final_key, final_value_to_assign, target)
 
                 elif isinstance(base, dict):
-                    # Enforce const properties on Nova instances
+                    # Enforce const properties on Mapple instances
                     const_set = base.get("__const__")
                     if const_set and final_key in const_set:
-                        raise NovaError(
+                        raise MappleError(
                             target,
                             f"Cannot re-assign constant property '{final_key}'",
                         )
@@ -922,7 +926,7 @@ class Interpreter:
                     if final_key in base and isinstance(base[final_key], Proxy):
                         proxy = base[final_key]
                         if not proxy.set:
-                            raise NovaError(
+                            raise MappleError(
                                 target, f"Property '{final_key}' has no setter."
                             )
                         cls = base.get("__DefiningClass")
@@ -942,8 +946,8 @@ class Interpreter:
                         # We prefer the original AST (LambdaDecl) when available so we
                         # can reconstruct a proper MethodDefinition that receives `self`.
                         # Extension point: if you add new callable AST nodes, just attach
-                        # .__nova_ast__ on the wrapper (see LambdaDecl evaluation).
-                        ast_node = getattr(assigned_value, "__nova_ast__", None)
+                        # .__mapple_ast__ on the wrapper (see LambdaDecl evaluation).
+                        ast_node = getattr(assigned_value, "__mapple_ast__", None)
                         if (
                             ast_node is not None
                             and hasattr(ast_node, "parameters")
@@ -999,7 +1003,7 @@ class Interpreter:
                         ):
                             base[final_key] = final_value_to_assign
                         else:
-                            raise NovaError(
+                            raise MappleError(
                                 target,
                                 f"Cannot assign to property '{final_key}' of object of type {type(base).__name__}.",
                             )
@@ -1028,7 +1032,7 @@ class Interpreter:
                     try:
                         return left[op](right)
                     except Exception as e:
-                        raise NovaError(
+                        raise MappleError(
                             expr, f"Error calling overloaded operator '{op}': {e}"
                         )
                 # If no operator overloading found, fall through to normal operations
@@ -1047,7 +1051,7 @@ class Interpreter:
                     elif isinstance(right, dict):
                         left = left.format(**right)
                     else:
-                        raise NovaError(
+                        raise MappleError(
                             expr,
                             "'%' formatting requires a list or object on the right, got {}".format(
                                 type(right).__name__
@@ -1063,7 +1067,7 @@ class Interpreter:
                 if isinstance(left, (int, float)) and not isinstance(
                     right, (int, float)
                 ):
-                    raise NovaError(
+                    raise MappleError(
                         expr,
                         f"If you wanted to repeat '{right}' {left} times, you'd do '\"{right}\" * {left}'",
                     )
@@ -1072,7 +1076,7 @@ class Interpreter:
                 return left**right
             elif expr.operator == "/":
                 if right == 0:
-                    raise NovaError(expr, "Division by zero is not allowed.")
+                    raise MappleError(expr, "Division by zero is not allowed.")
                 return left / right
             elif expr.operator == "==":
                 return left == right
@@ -1090,17 +1094,17 @@ class Interpreter:
                 return left <= right
             elif expr.operator == "between":
                 if not isinstance(right, (list, tuple)) or len(right) != 2:
-                    raise NovaError(expr, "'between' requires a range [low, high]")
+                    raise MappleError(expr, "'between' requires a range [low, high]")
                 return left >= right[0] and left <= right[1]
             elif expr.operator == ">=":
                 return left >= right
             elif expr.operator == "->":
                 if not callable(right):
-                    raise NovaError(expr, f"right side of pipe expr must be a function")
+                    raise MappleError(expr, f"right side of pipe expr must be a function")
                 return right(left)
             elif expr.operator == "=>":
                 if not callable(right):
-                    raise NovaError(expr, f"right side of pipe expr must be a function")
+                    raise MappleError(expr, f"right side of pipe expr must be a function")
                 clone = copy.deepcopy(left)
                 if isinstance(clone, dict):
                     for k, v in clone.items():
@@ -1109,16 +1113,16 @@ class Interpreter:
                     for i, v in enumerate(clone):
                         clone[i] = right(v, i)
                 else:
-                    raise NovaError(expr, "=> only works on arrays or objects")
+                    raise MappleError(expr, "=> only works on arrays or objects")
                 return clone
             else:
-                raise NovaError(expr, f"Unknown binary operator: {expr.operator}")
+                raise MappleError(expr, f"Unknown binary operator: {expr.operator}")
 
         elif expr.type == "UnaryExpr":
             right = self.evaluate_expr(expr.right, env)
             if expr.operator == "-":
                 if not isinstance(right, (int, float)):
-                    raise NovaError(
+                    raise MappleError(
                         expr,
                         f"Unary '-' operator can only be applied to numbers. Got: {type(right).__name__}",
                     )
@@ -1131,12 +1135,12 @@ class Interpreter:
                 elif hasattr(right, "__len__"):
                     return len(right)
                 else:
-                    raise NovaError(
+                    raise MappleError(
                         expr, f"Unary '#' cannot be applied to {type(right).__name__}"
                     )
 
             else:
-                raise NovaError(expr, f"Unknown unary operator: {expr.operator}")
+                raise MappleError(expr, f"Unknown unary operator: {expr.operator}")
 
         elif expr.type == "FuncCall":
             # Evaluate the callee expression (Identifier, ArrayAccess, etc.)
@@ -1145,7 +1149,7 @@ class Interpreter:
             self.callStack.append(name_for_stack)
             try:
                 if not callable(callee):
-                    raise NovaError(
+                    raise MappleError(
                         expr,
                         f"{name_for_stack} is not a function (got {type(callee).__name__})",
                     )
@@ -1184,7 +1188,7 @@ class Interpreter:
             obj = self.evaluate_expr(expr.object, env)
             self._check_private_access(obj, expr.method, expr)
             if obj is None:
-                raise NovaError(expr, f"Cannot call method '{expr.method}' on None.")
+                raise MappleError(expr, f"Cannot call method '{expr.method}' on None.")
 
             args = []
             kwargs = {}
@@ -1204,34 +1208,34 @@ class Interpreter:
                     v = self.evaluate_expr(arg, env)
                     args.append(v)
 
-            # Handle NovaClass static methods
-            if isinstance(obj, NovaClass):
+            # Handle MappleClass static methods
+            if isinstance(obj, MappleClass):
                 static_method = obj.static_members.get(expr.method)
                 if callable(static_method):
                     return static_method(*args, **kwargs)
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"Static method '{expr.method}' not found or is not a function on class '{obj.name}'.",
                 )
 
             fn = None
-            # If obj is a NovaScript instance (represented as a Python dictionary)
+            # If obj is a MappleScript instance (represented as a Python dictionary)
             if isinstance(obj, dict) and expr.method in obj:
                 fn = obj[expr.method]
-            # If obj is an Environment (e.g., 'self' within a NovaScript method)
+            # If obj is an Environment (e.g., 'self' within a MappleScript method)
             elif isinstance(obj, Environment):
                 # FIX: Get value from var
                 fn = obj.get(expr.method, expr).value
-            # For regular Python objects exposed to NovaScript
+            # For regular Python objects exposed to MappleScript
             else:
                 fn = getattr(obj, expr.method, None)
 
             if not callable(fn):
-                raise NovaError(
+                raise MappleError(
                     expr, f"{expr.method} is not a function or method on this object"
                 )
 
-            # Push class context if the method has a defining clas attribute (NovaScript bound method)
+            # Push class context if the method has a defining clas attribute (MappleScript bound method)
             if isinstance(obj, dict) and "__DefiningClass" in obj:
                 # Push the defining class before calling the method
                 self.current_class_stack.append(obj["__DefiningClass"])
@@ -1256,12 +1260,12 @@ class Interpreter:
             if not isinstance(arr, (list, dict, str, tuple)) and not hasattr(
                 arr, "__getitem__"
             ):
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"Cannot access index of non-list/dict/indexible: {type(arr).__name__}",
                 )
             if not isinstance(index, (int, str)):
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"List/dict index must be a number or string. Got: {type(index).__name__}",
                 )
@@ -1274,7 +1278,7 @@ class Interpreter:
                 return arr[index]
             except (IndexError, KeyError):
                 return None
-                #raise NovaError(
+                #raise MappleError(
                 #    expr, f"Index/key '{index}' out of bounds or not found for object."
                 #)
 
@@ -1283,15 +1287,15 @@ class Interpreter:
             self._check_private_access(obj, expr.property, expr)
 
             if obj is None:
-                raise NovaError(
+                raise MappleError(
                     expr, f"Cannot access property '{expr.property}' of None."
                 )
 
-            # Handle NovaClass static properties
-            if isinstance(obj, NovaClass):
+            # Handle MappleClass static properties
+            if isinstance(obj, MappleClass):
                 if expr.property in obj.static_members:
                     return obj.static_members[expr.property]
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"Static property '{expr.property}' not found on class '{obj.name}'.",
                 )
@@ -1299,7 +1303,7 @@ class Interpreter:
                 val = obj[expr.property]
                 if isinstance(val, Proxy):
                     if not val.get:
-                        raise NovaError(
+                        raise MappleError(
                             expr, f"Property '{expr.property}' has no getter."
                         )
                     cls = obj.get("__DefiningClass")
@@ -1312,10 +1316,10 @@ class Interpreter:
                     else:
                         return val.get()
                 return val
-            # If obj is a NovaScript instance (represented as a Python dictionary)
+            # If obj is a MappleScript instance (represented as a Python dictionary)
             # if isinstance(obj, dict) and expr.property in obj:
             #    return obj[expr.property]
-            # If obj is an Environment (e.g., 'self' within a NovaScript method)
+            # If obj is an Environment (e.g., 'self' within a MappleScript method)
             elif isinstance(obj, Environment):
                 # FIX: Get value from var
                 return obj.get(expr.property, expr).value
@@ -1324,7 +1328,7 @@ class Interpreter:
                 return getattr(obj, expr.property)
 
             return None
-            #raise NovaError(expr, f"Property '{expr.property}' not found on object.")
+            #raise MappleError(expr, f"Property '{expr.property}' not found on object.")
 
         elif expr.type == "ArrayLiteral":
             return [self.evaluate_expr(element, env) for element in expr.elements]
@@ -1350,13 +1354,13 @@ class Interpreter:
                 elif hasattr(current_resolved_object, part):
                     next_resolved_part = getattr(current_resolved_object, part)
                 else:
-                    raise NovaError(
+                    raise MappleError(
                         expr,
                         f"Cannot resolve part '{part}' in class path '{expr.class_name}'. Previous part was type {type(current_resolved_object).__name__}.",
                     )
 
                 if next_resolved_part is None:
-                    raise NovaError(
+                    raise MappleError(
                         expr, f"Class '{expr.class_name}' part '{part}' not found."
                     )
 
@@ -1365,7 +1369,7 @@ class Interpreter:
             target_class = current_resolved_object
             args = [self.evaluate_expr(arg, env) for arg in expr.arguments]
             c = None
-            if isinstance(target_class, NovaClass):
+            if isinstance(target_class, MappleClass):
                 c = target_class.instantiate(args)
             elif isinstance(target_class, type) and hasattr(
                 target_class, "__init__"
@@ -1374,12 +1378,12 @@ class Interpreter:
                 try:
                     c = target_class(*args)
                 except Exception as e:
-                    raise NovaError(
+                    raise MappleError(
                         expr,
                         f"Error instantiating Python class '{expr.class_name}' (resolved to {target_class}): {e}",
                     )
             else:
-                raise NovaError(
+                raise MappleError(
                     expr,
                     f"'{expr.class_name}' (resolved to {target_class}) is not a constructible class.",
                 )
@@ -1406,12 +1410,12 @@ class Interpreter:
             # print(expr.__dict__)
             value = self.evaluate_expr(expr.expr, env)
             if not callable(value):
-                raise NovaError(expr.expr, "Expected to return a function")
+                raise MappleError(expr.expr, "Expected to return a function")
             # print(f"{value = }")
             body = self.evaluate_expr(expr.body, env)
 
             if not callable(body):
-                raise NovaError(expr.body, "Expected to be a function")
+                raise MappleError(expr.body, "Expected to be a function")
             # print(f"{body = }")
             val = value(body)
             # print(f"{val = }")
@@ -1425,4 +1429,4 @@ class Interpreter:
             v.lock()
             return v
         else:
-            raise NovaError(expr, f"Unknown expression type: {expr}")
+            raise MappleError(expr, f"Unknown expression type: {expr}")

@@ -1,4 +1,4 @@
-// novascript/examples/game.nova
+// mapplescript/examples/game.mapple
 
 const zcore = load("py:zcore/zcore")
 
