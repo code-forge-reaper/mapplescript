@@ -10,7 +10,6 @@ from .helpers import Proxy, dprint
 from .nodes import *
 import sys
 import pathlib
-from . import conf
 
 
 import uuid
@@ -318,7 +317,7 @@ class Interpreter:
                     handled = expression_val["__exit__"](type(e), e, e.__traceback__)
 
                 if not handled:
-                    raise e
+                    raise
             else:
                 if getattr(expression_val, "__exit__", None):
                     expression_val.__exit__(
