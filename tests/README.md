@@ -31,3 +31,4 @@ python mapple.py tests/test_basics.mapple
 | `test_classes.mapple` | class, record, methods, properties |
 | `test_errors.mapple` | assert, test/failed, raise |
 | `test_misc.mapple` | between, enum, matches, map (`=>`), defer |
+| `test_kwargs.mapple` | `new Class(name: val)` kwargs, mixed, defaults, unpack |

@@ -225,7 +225,7 @@ class Tokenizer:
 
                 # decimal / float (with underscores, no trailing dot)
                 int_part = collect_digits("0123456789")  # integer part mandatory
-                if source[i].isalpha():
+                if i < length and source[i].isalpha():
                     raise MappleError(
                         Token("error", "Invalid integer", file, line, col),
                         "This is not a valid integer",
@@ -243,7 +243,7 @@ class Tokenizer:
                             Token("error", "Invalid numeric literal", file, line, col),
                             "Trailing dot in numeric literal",
                         ) from e
-                    if source[i].isalpha():
+                    if i < length and source[i].isalpha():
                         raise MappleError(
                             Token("error", "Invalid float", file, line, col),
                             "This is not a valid float",
@@ -1543,7 +1543,15 @@ class Tokenizer:
     def _parse_function_body(self):
         """Parse the body of a function/lambda after the closing ')' has been
         consumed. Handles both single-expression (=) and block forms."""
-        if self.get_next_token().value == "=":
+        nt = self.get_next_token()
+        if nt is None:
+            last = (
+                self.tokens[self.current - 1]
+                if self.current > 0
+                else Token("EOF", "EOF", self.file, 1, 1)
+            )
+            raise MappleError(last, "Unexpected end of input")
+        if nt.value == "=":
             t = self.consume_token()
             return [ReturnStmt(self.parse_expression(), t.file, t.line, t.column)]
 
@@ -1713,14 +1721,7 @@ class Tokenizer:
             self.expect_token("(")
             self.consume_token()
 
-            args = []
-            if self.get_next_token() and not self.is_token(")"):
-                while True:
-                    args.append(self.parse_expression())
-                    if self.is_token(","):
-                        self.consume_token()
-                    else:
-                        break
+            args = self.parse_argument_list()
             self.expect_token(")")
             self.consume_token()
             node = NewInstance(

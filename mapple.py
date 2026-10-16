@@ -19,7 +19,7 @@ def main():
     parser.add_argument(
         "script",
         nargs="?",
-        help="Mapple source file (or '-' for stdin)",
+        help="Mapple source file (or '-' for stdin). Omit to start the REPL.",
     )
     parser.add_argument(
         "-d",
@@ -29,12 +29,20 @@ def main():
         required=False,
         action="store_true",
     )
+    parser.add_argument(
+        "-i",
+        "--interactive",
+        default=False,
+        action="store_true",
+        help="start the REPL (default when no script is given)",
+    )
 
     args = parser.parse_args()
 
-    if args.script is None:
-        parser.print_help()
-        return 0
+    # No script, or explicit -i with no file → interactive REPL
+    if args.script is None or (args.interactive and args.script is None):
+        from mapple.repl import run_repl
+        return run_repl()
 
     if args.script == "-":
         source = sys.stdin.read()

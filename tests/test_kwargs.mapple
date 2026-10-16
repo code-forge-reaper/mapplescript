@@ -1,0 +1,56 @@
+// tests/test_kwargs.mapple — keyword args on `new` / constructors
+
+class Person
+    var name
+    var age
+    func init(name, age)
+        self.name = name
+        self.age = age
+    end
+end
+
+// all kwargs
+var a = new Person(name: "Alice", age: 30)
+assert a.name == "Alice", "all-kwargs name"
+assert a.age == 30, "all-kwargs age"
+
+// mixed positional + keyword
+var b = new Person("Bob", age: 25)
+assert b.name == "Bob", "mixed name"
+assert b.age == 25, "mixed age"
+
+// pure positional still works
+var c = new Person("Carol", 40)
+assert c.name == "Carol", "positional name"
+assert c.age == 40, "positional age"
+
+// kwargs order independence
+var d = new Person(age: 18, name: "Dana")
+assert d.name == "Dana", "reordered kwargs name"
+assert d.age == 18, "reordered kwargs age"
+
+// defaults + kwargs
+class Box
+    var w
+    var h
+    func init(w, h=10)
+        self.w = w
+        self.h = h
+    end
+end
+
+var e = new Box(w: 5)
+assert e.w == 5, "default h with kw w"
+assert e.h == 10, "default h value"
+
+var f = new Box(3, h: 7)
+assert f.w == 3, "pos w + kw h"
+assert f.h == 7, "override default via kw"
+
+// unpack dict into kwargs
+var opts = {"name": "Eve", "age": 22}
+var g = new Person(unpack opts)
+assert g.name == "Eve", "unpack dict name"
+assert g.age == 22, "unpack dict age"
+
+print("test_kwargs: OK")

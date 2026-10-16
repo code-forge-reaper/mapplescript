@@ -150,7 +150,9 @@ class MappleClass:
     # ------------------------------------------------------------------
     #  Unified instance creation
     # ------------------------------------------------------------------
-    def instantiate(self, args):
+    def instantiate(self, args, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         if self._python_root is not None:
             instance = self._python_root.__new__(
                 self._python_root
@@ -165,7 +167,7 @@ class MappleClass:
         self._build_instance_layout(instance)
 
         # Run constructor chain (most derived first, super calls move up)
-        self._run_constructor_chain(args, instance)
+        self._run_constructor_chain(args, instance, kwargs)
         return instance
 
     # ------------------------------------------------------------------
@@ -328,12 +330,16 @@ class MappleClass:
     # ------------------------------------------------------------------
     #  Constructor chain
     # ------------------------------------------------------------------
-    def _run_constructor_chain(self, args, instance):
+    def _run_constructor_chain(self, args, instance, kwargs=None):
         """Start the chain from the most derived class."""
+        if kwargs is None:
+            kwargs = {}
         if self.constructor_def:
-            self._execute_constructor(self.constructor_def, args, instance)
+            self._execute_constructor(self.constructor_def, args, instance, kwargs)
 
-    def _execute_constructor(self, constructor_def, args, instance):
+    def _execute_constructor(self, constructor_def, args, instance, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
         constructor_env = Environment(self.env)
         constructor_env.define("self", instance)
 
@@ -342,20 +348,20 @@ class MappleClass:
             if isinstance(self.super_class, MappleClass):
                 parent = self.super_class
 
-                def super_constructor_call(*super_args):
+                def super_constructor_call(*super_args, **super_kwargs):
                     if parent.constructor_def:
                         parent._execute_constructor(
-                            parent.constructor_def, super_args, instance
+                            parent.constructor_def, super_args, instance, super_kwargs
                         )
 
                 constructor_env.define("Base", super_constructor_call)
             elif isinstance(self.super_class, type):
                 parent_type = self.super_class
 
-                def super_constructor_call(*super_args):
+                def super_constructor_call(*super_args, **super_kwargs):
                     try:
                         parent_type.__init__(  # pylint: disable=unnecessary-dunder-call
-                            instance, *super_args
+                            instance, *super_args, **super_kwargs
                         )
                     except Exception as e:
                         raise ValueError(
@@ -368,11 +374,11 @@ class MappleClass:
                     f"Invalid superclass type: {type(self.super_class).__name__}",
                 )
 
-        # Bind constructor parameters via shared helper
+        # Bind constructor parameters via shared helper (positional + keyword)
         bound = bind_parameters(
             constructor_def.parameters,
             args,
-            {},  # constructors currently positional-only from call site
+            kwargs,
             self.interpreter,
             self.env,
             context_name=f"constructor of '{self.name}'",

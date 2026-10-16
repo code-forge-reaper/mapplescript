@@ -18,11 +18,13 @@ sys.path.insert(0, str(ROOT))
 
 from mapple.nodes import MappleError
 from mapple.runtime import Interpreter
+from modules.modules import setup
 
 
 def run_one(path: Path) -> tuple[bool, str]:
     source = path.read_text(encoding="utf-8")
     interp = Interpreter(source, str(path))
+    setup(interp, interp.globals)
     try:
         interp.interpret()
         return True, "OK"
