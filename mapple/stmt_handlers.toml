@@ -49,8 +49,11 @@ ExpressionStmt = "Expr"
 [defer]
 DeferStmt = "defer"
 
-[contineStmt]
-ContineStmt = "Continue"
+[breakStmt]
+BreakStmt = "Break"
+
+[continueStmt]
+ContinueStmt = "Continue"
 
 [var]
 ConstDecl = "declare"
