@@ -9,6 +9,9 @@ from typing import Any
 import uuid
 from collections.abc import Iterable, Callable, Sequence, Mapping
 import copy
+import tomllib
+import importlib
+import importlib.util
 
 from .mappleclass import bind_parameters
 from .mappleenv import FuncWrapp
@@ -69,41 +72,67 @@ class Interpreter:
         self.callStack = []
         self.errorStack = []
 
-        # TODO: load expr_handlers.toml
-        # TODO: load stmt_handlers.toml
-        # FIRST: check if they exist(right now, only expr exists)
-        # the .py files should be under "<type>_handlers"
-        # expr_handlers/array.py
-        """expr_handlers.toml
-        [array]
-        ArrayLiteral = "Array"
-        ArrayAccess = "Access"
-        """
-
         # ------------------------------------------------------------------
-        # Extensibility registries
+        # Extensibility registries (TOML-driven under mapple/*_handlers/)
         # ------------------------------------------------------------------
-        # To add a new statement type:
+        # To add a new expression type:
         #   1. Add the AST node in nodes.py
-        #   2. Implement a method `_stmt_YourType(self, stmt, env)`
-        #   3. Register it here: self._stmt_handlers["YourType"] = self._stmt_YourType
-        # Same pattern for expressions with `_expr_handlers`.
-        #
-        # The big if/elif chains remain for now for backward compatibility, but
-        # new features should prefer the registry path so the core dispatch stays
-        # clean and easy to maintain.
+        #   2. Implement a handler in mapple/expr_handlers/<mod>.py
+        #      signature: def HandlerName(self, expr, env): ...
+        #   3. Register it in mapple/expr_handlers.toml:
+        #        [mod]
+        #        AstNodeType = "HandlerName"
+        # Same pattern for statements once stmt_handlers.toml exists.
         self._stmt_handlers = {}
         self._expr_handlers = {}
         self._register_default_handlers()
 
+    def _load_handler_toml(self, kind: str) -> None:
+        """Load `mapple/{kind}_handlers.toml` and bind handlers into the registry.
+
+        kind is "expr" or "stmt". Missing files are ignored (stmt does not exist yet).
+        """
+        package_dir = pathlib.Path(__file__).resolve().parent
+        toml_path = package_dir / f"{kind}_handlers.toml"
+        handlers_dir = package_dir / f"{kind}_handlers"
+        registry = self._expr_handlers if kind == "expr" else self._stmt_handlers
+
+        if not toml_path.is_file():
+            return
+
+        with open(toml_path, "rb") as f:
+            info = tomllib.load(f)
+
+        for mod_name, bindings in info.items():
+            full_name = f"mapple.{kind}_handlers.{mod_name}"
+            try:
+                mod = importlib.import_module(full_name)
+            except ImportError:
+                candidate = handlers_dir / f"{mod_name}.py"
+                if not candidate.is_file():
+                    raise ImportError(
+                        f"Cannot load {kind} handler module {mod_name!r} "
+                        f"(expected {candidate})"
+                    )
+                spec = importlib.util.spec_from_file_location(full_name, candidate)
+                if spec is None or spec.loader is None:
+                    raise ImportError(f"Cannot load {candidate}")
+                mod = importlib.util.module_from_spec(spec)
+                sys.modules[full_name] = mod
+                spec.loader.exec_module(mod)
+
+            for ast_type, attr_name in bindings.items():
+                if not hasattr(mod, attr_name):
+                    raise AttributeError(
+                        f"{kind}_handlers/{mod_name}.py has no attribute {attr_name!r} "
+                        f"(needed for AST type {ast_type!r})"
+                    )
+                registry[ast_type] = getattr(mod, attr_name)
+
     def _register_default_handlers(self):
-        """Populate the extensibility registries. Override or extend in subclasses."""
-        # Statement handlers (examples – full coverage still lives in execute_stmt)
-        # self._stmt_handlers["VarDecl"] = self._stmt_VarDecl
-        # ...
-        # Expression handlers
-        # self._expr_handlers["Literal"] = self._expr_Literal
-        return  # not used for anything right now
+        """Populate registries from expr_handlers.toml / stmt_handlers.toml."""
+        self._load_handler_toml("expr")
+        self._load_handler_toml("stmt")  # no-op until stmt_handlers.toml exists
 
     def _create_callable(
         self, parameters, body, env, name=None, node=None, context_name=None

@@ -1,3 +1,4 @@
+import copy
 from mapple.helpers import dprint, opToName
 from mapple.nodes import MappleError
 

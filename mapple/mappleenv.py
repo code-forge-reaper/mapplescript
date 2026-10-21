@@ -124,6 +124,7 @@ class Environment:
 
             check_type(var.type_annotation, value, tok)
             var.value = value
+            return
 
         if self.parent:
             if self.localsOnly:
@@ -132,6 +133,8 @@ class Environment:
                     f"Cannot modify variable '{name}', since it is not created in this scope",
                 )
             self.parent.assign(name, value, tok)
+            return
+
         raise MappleError(tok, f"Undefined variable {name}")
 
     def get(self, name: str, tok=None):
