@@ -94,7 +94,7 @@ class Environment:
             raise MappleError(
                 None, "Cannot execute deferred statements in locked environment"
             )
-        # Execute in reverse order of deferral
+        self.deferred.reverse()
         while self.deferred:
             stmt = self.deferred.pop()
             interpreter.execute_stmt(stmt, self)

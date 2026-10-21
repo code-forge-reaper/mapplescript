@@ -3,6 +3,13 @@ A language made for convenience and ease of writing.
 By consequence, you don't get conventional syntax out of it.
 (Basically `BASIC` mixed with a bunch of other languages' stuff, only using what's convenient)
 
+## About
+MappleScript is a interpreted language written in python, it uses a AST-walking mechanism(because I can't be bothered to implement bytecode compilation).
+
+>!
+> Functions get turned into real callable stuff, so python itself can call them,
+> mapple just makes it a shell around the same interpreting work it does
+
 ## Requirements
 - Python 3.12+
 

@@ -311,17 +311,16 @@ print("Defer example:")
 test
     print("  Entering defer block scope.")
     defer
-        print("  Deferred statement 1 (executed last).")
+        print("  Deferred statement 1 (executed first).")
         print("  Still in defer 1 block scope.")
     end
     defer
-        print("  Deferred statement 2 (executed first).")
+        print("  Deferred statement 2 (executed last).")
     end
     print("  Exiting defer block scope.")
 failed err
     Logger.error("  Error in defer scope test:", err)
 end
-
 
 // --- 4. Functions ---
 

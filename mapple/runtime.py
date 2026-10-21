@@ -193,7 +193,7 @@ class Interpreter:
                     return result
             return None
         finally:
-            # Execute deferred statements in reverse order
+            # Execute deferred statements in order
             env.execute_deferred(self)
             self.current_env = previous_env
 
@@ -261,11 +261,7 @@ class Interpreter:
             else:
                 raise MappleError(stmt, f"Cannot export statement of type {inner.type}")
         elif stmt.type == "DeferStmt":
-            # To match TypeScript's behavior: statements within a single defer block
-            # are executed in FIFO order. Since `execute_deferred` pops from the end
-            # of the list, we must add them in reverse order here.
-            reversed_stmts = list(reversed(stmt.body))
-            for s in reversed_stmts:
+            for s in stmt.body:
                 env.add_deferred(s)
 
         elif stmt.type == "ExpressionStmt":

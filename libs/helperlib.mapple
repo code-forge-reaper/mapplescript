@@ -1,6 +1,6 @@
 export func map(fn)
   return func(values)
-    if Is.array(values)
+    if Is.list(values)
       const v = []
       for value in values do
         var vv = fn(value)
