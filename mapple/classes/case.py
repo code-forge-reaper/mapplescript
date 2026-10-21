@@ -1,3 +1,4 @@
+from .serialize import serialize_node, serialize_list
 
 class Case:
     def __init__(self, case_expr, body):
@@ -16,9 +17,9 @@ class Case:
     def to_dict(self):
         return {
             "type": "Case",
-            "case_expr": _serialize_node(self.case_expr)
+            "case_expr": serialize_node(self.case_expr)
             if self.case_expr
             else "default",
-            "body": _serialize_list(self.body),
+            "body": serialize_list(self.body),
         }
 

@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .statement import Statement
+
 class ClassDefinition(Statement):
     def __init__(self, name, superclass_name, body, file, line, column):
         super().__init__("ClassDefinition", file, line, column)
@@ -19,6 +22,6 @@ class ClassDefinition(Statement):
         base = super().to_dict()
         base["class_name"] = self.name
         base["superclass"] = self.superclass_name
-        base["body"] = _serialize_list(self.body)
+        base["body"] = serialize_list(self.body)
         return base
 

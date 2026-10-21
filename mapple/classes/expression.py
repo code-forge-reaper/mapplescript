@@ -1,5 +1,4 @@
-from mapple.classes.baseToken import Token
-
+from .baseToken import Token
 
 class Expression(Token):
     def __init__(self, type, file, line, column):

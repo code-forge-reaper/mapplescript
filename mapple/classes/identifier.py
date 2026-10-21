@@ -1,6 +1,5 @@
 from .expression import Expression
 
-
 class Identifier(Expression):
     def __init__(self, name, file, line, column):
         super().__init__("Identifier", file, line, column)

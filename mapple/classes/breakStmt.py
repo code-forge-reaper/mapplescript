@@ -1,3 +1,5 @@
+from .statement import Statement
+
 class BreakStmt(Statement):
     def __init__(self, file, line, column):
         super().__init__("BreakStmt", file, line, column)

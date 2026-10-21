@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class SwitchStmt(Statement):
     def __init__(self, expression, cases, strict, file, line, column):
         super().__init__("SwitchStmt", file, line, column)
@@ -14,7 +17,7 @@ class SwitchStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["expression"] = _serialize_node(self.expression)
+        base["expression"] = serialize_node(self.expression)
         base["cases"] = [c.to_dict() for c in self.cases]
         base["strict"] = self.strict
         return base

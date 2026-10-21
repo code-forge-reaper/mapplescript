@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .statement import Statement
+
 class DeferStmt(Statement):
     def __init__(self, body, file, line, column):
         super().__init__("DeferStmt", file, line, column)
@@ -14,5 +17,5 @@ class DeferStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["body"] = _serialize_list(self.body)
+        base["body"] = serialize_list(self.body)
         return base

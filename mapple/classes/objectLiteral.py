@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class ObjectLiteral(Expression):
     def __init__(self, properties, file, line, column):
@@ -24,8 +24,8 @@ class ObjectLiteral(Expression):
                 {
                     "key": p["key"]
                     if isinstance(p["key"], str)
-                    else _serialize_node(p["key"]),
-                    "value": _serialize_node(p["value"]),
+                    else serialize_node(p["key"]),
+                    "value": serialize_node(p["value"]),
                 }
             )
         base["properties"] = props

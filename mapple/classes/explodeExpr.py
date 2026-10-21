@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .expression import Expression
+
 class ExplodeExpr(Expression):
     def __init__(self, args, file, line, col):
         super().__init__("ExplodeExpr", file, line, col)
@@ -14,5 +17,5 @@ class ExplodeExpr(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["args"] = _serialize_list(self.args)
+        base["args"] = serialize_list(self.args)
         return base

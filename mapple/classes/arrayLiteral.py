@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_list
 
 class ArrayLiteral(Expression):
     def __init__(self, elements, file, line, column):
@@ -17,5 +17,5 @@ class ArrayLiteral(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["elements"] = _serialize_list(self.elements)
+        base["elements"] = serialize_list(self.elements)
         return base

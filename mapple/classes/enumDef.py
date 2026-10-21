@@ -1,3 +1,5 @@
+from .expression import Expression
+
 class EnumDef(Expression):
     def __init__(self, values, file, line, column):
         super().__init__("EnumDef", file, line, column)

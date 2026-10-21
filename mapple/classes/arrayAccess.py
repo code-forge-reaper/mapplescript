@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class ArrayAccess(Expression):
     def __init__(self, object, index, file, line, column):
@@ -15,6 +15,6 @@ class ArrayAccess(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["object"] = _serialize_node(self.object)
-        base["index"] = _serialize_node(self.index)
+        base["object"] = serialize_node(self.object)
+        base["index"] = serialize_node(self.index)
         return base

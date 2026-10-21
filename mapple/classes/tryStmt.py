@@ -1,3 +1,5 @@
+from .serialize import serialize_list
+from .statement import Statement
 
 class TryStmt(Statement):
     def __init__(self, try_block, error_var, catch_block, file, line, column):
@@ -16,8 +18,8 @@ class TryStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["try_block"] = _serialize_list(self.try_block)
+        base["try_block"] = serialize_list(self.try_block)
         base["error_var"] = self.error_var
-        base["catch_block"] = _serialize_list(self.catch_block)
+        base["catch_block"] = serialize_list(self.catch_block)
         return base
 

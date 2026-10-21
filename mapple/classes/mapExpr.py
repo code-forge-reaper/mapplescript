@@ -1,6 +1,5 @@
 from .binaryExpr import BinaryExpr
 
-
 class MapExpr(BinaryExpr):
     def __init__(self, left, right, file, line, column):
         super().__init__("=>", left, right, file, line, column)

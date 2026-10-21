@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class ConstDeclStmt(Statement):
     def __init__(self, name, type_annotation, initializer, file, line, column):
         super().__init__("ConstDecl", file, line, column)
@@ -19,5 +22,5 @@ class ConstDeclStmt(Statement):
         base = super().to_dict()
         base["name"] = self.name
         base["type_annotation"] = self.type_annotation
-        base["initializer"] = _serialize_node(self.initializer)
+        base["initializer"] = serialize_node(self.initializer)
         return base

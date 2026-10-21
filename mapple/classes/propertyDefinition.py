@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class PropertyDefinition(Statement):
     def __init__(
         self,
@@ -35,7 +38,7 @@ class PropertyDefinition(Statement):
         base["name"] = self.name
         base["type_annotation"] = self.type_annotation
         base["initializer"] = (
-            _serialize_node(self.initializer) if self.initializer else None
+            serialize_node(self.initializer) if self.initializer else None
         )
         base["is_static"] = self.is_static
         base["is_private"] = self.is_private

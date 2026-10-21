@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .expression import Expression
+
 class DecoratorExpr(Expression):
     def __init__(self, expr, body, file, line, column):
         super().__init__("DecoratorExpr", file, line, column)
@@ -12,6 +15,6 @@ class DecoratorExpr(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["expr"] = _serialize_node(self.expr)
-        base["body"] = _serialize_node(self.body)
+        base["expr"] = serialize_node(self.expr)
+        base["body"] = serialize_node(self.body)
         return base

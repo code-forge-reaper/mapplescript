@@ -1,3 +1,6 @@
+from .serialize import serialize_node, serialize_list
+from .statement import Statement
+
 class IfStmt(Statement):
     def __init__(self, condition, then_block, else_block, else_if, file, line, column):
         super().__init__("IfStmt", file, line, column)
@@ -30,13 +33,13 @@ class IfStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["condition"] = _serialize_node(self.condition)
-        base["then_block"] = _serialize_list(self.then_block)
+        base["condition"] = serialize_node(self.condition)
+        base["then_block"] = serialize_list(self.then_block)
         base["else_if"] = (
             [
                 {
-                    "condition": _serialize_node(b["condition"]),
-                    "body": _serialize_list(b["body"]),
+                    "condition": serialize_node(b["condition"]),
+                    "body": serialize_list(b["body"]),
                 }
                 for b in self.else_if
             ]
@@ -44,7 +47,7 @@ class IfStmt(Statement):
             else []
         )
         base["else_block"] = (
-            _serialize_list(self.else_block) if self.else_block else None
+            serialize_list(self.else_block) if self.else_block else None
         )
         return base
 

@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class AssertStmt(Statement):
     def __init__(self, expression, message, file, line, column):
         super().__init__("AssertStmt", file, line, column)
@@ -13,6 +16,6 @@ class AssertStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["expression"] = _serialize_node(self.expression)
+        base["expression"] = serialize_node(self.expression)
         base["message"] = self.message
         return base

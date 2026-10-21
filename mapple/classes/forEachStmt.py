@@ -1,3 +1,6 @@
+from .serialize import serialize_node, serialize_list
+from .statement import Statement
+
 class ForEachStmt(Statement):
     def __init__(self, variable, list, body, file, line, column):
         super().__init__("ForEachStmt", file, line, column)
@@ -15,6 +18,6 @@ class ForEachStmt(Statement):
     def to_dict(self):
         base = super().to_dict()
         base["variable"] = self.variable
-        base["list"] = _serialize_node(self.list)
-        base["body"] = _serialize_list(self.body)
+        base["list"] = serialize_node(self.list)
+        base["body"] = serialize_list(self.body)
         return base

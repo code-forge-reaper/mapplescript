@@ -1,6 +1,5 @@
 from .expression import Expression
 
-
 # --- Specific AST Node Classes ---
 class Literal(Expression):
     def __init__(self, value, file, line, column):

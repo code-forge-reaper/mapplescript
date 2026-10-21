@@ -1,7 +1,6 @@
 from .expression import Expression
 from .serialize import serialize_node, serialize_list
 
-
 class FuncCall(Expression):
     def __init__(self, callee, arguments, file, line, column):
         super().__init__("FuncCall", file, line, column)

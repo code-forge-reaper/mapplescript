@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class BinaryExpr(Expression):
     def __init__(self, operator, left, right, file, line, column):
@@ -17,6 +17,6 @@ class BinaryExpr(Expression):
     def to_dict(self):
         base = super().to_dict()
         base["operator"] = self.operator
-        base["left"] = _serialize_node(self.left)
-        base["right"] = _serialize_node(self.right)
+        base["left"] = serialize_node(self.left)
+        base["right"] = serialize_node(self.right)
         return base

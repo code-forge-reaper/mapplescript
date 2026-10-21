@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .statement import Statement
+
 class FuncDecl(Statement):
     def __init__(self, name, parameters, body, file, line, column):
         super().__init__("FuncDecl", file, line, column)
@@ -16,6 +19,6 @@ class FuncDecl(Statement):
     def to_dict(self):
         base = super().to_dict()
         base["name"] = self.name
-        base["parameters"] = _serialize_list(self.parameters)
-        base["body"] = _serialize_list(self.body)
+        base["parameters"] = serialize_list(self.parameters)
+        base["body"] = serialize_list(self.body)
         return base

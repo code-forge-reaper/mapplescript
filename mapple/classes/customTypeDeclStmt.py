@@ -1,3 +1,5 @@
+from .statement import Statement
+
 class CustomTypeDeclStmt(Statement):
     def __init__(self, name, definition, file, line, column):
         super().__init__("CustomTypeDeclStmt", file, line, column)

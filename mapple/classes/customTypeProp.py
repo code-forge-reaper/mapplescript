@@ -11,3 +11,6 @@ class CustomTypeProperty:
 
     def to_dict(self):
         return {"name": self.name, "type": self.type}
+
+# alias used by collector / older code
+CustomTypeProp = CustomTypeProperty

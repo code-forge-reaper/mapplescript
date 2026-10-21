@@ -1,3 +1,6 @@
+from .serialize import serialize_node, serialize_list
+from .statement import Statement
+
 class ForStmt(Statement):
     def __init__(self, variable, start, end, step, body, file, line, column):
         super().__init__("ForStmt", file, line, column)
@@ -18,9 +21,9 @@ class ForStmt(Statement):
     def to_dict(self):
         base = super().to_dict()
         base["variable"] = self.variable
-        base["start"] = _serialize_node(self.start)
-        base["end"] = _serialize_node(self.end)
-        base["step"] = _serialize_node(self.step) if self.step else None
-        base["body"] = _serialize_list(self.body)
+        base["start"] = serialize_node(self.start)
+        base["end"] = serialize_node(self.end)
+        base["step"] = serialize_node(self.step) if self.step else None
+        base["body"] = serialize_list(self.body)
         return base
 

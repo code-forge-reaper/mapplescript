@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .statement import Statement
+
 class MethodDefinition(Statement):
     def __init__(
         self,
@@ -30,8 +33,8 @@ class MethodDefinition(Statement):
     def to_dict(self):
         base = super().to_dict()
         base["name"] = "init" if self.is_constructor else self.name
-        base["parameters"] = _serialize_list(self.parameters)
-        base["body"] = _serialize_list(self.body)
+        base["parameters"] = serialize_list(self.parameters)
+        base["body"] = serialize_list(self.body)
         base["is_static"] = self.is_static
         base["is_constructor"] = self.is_constructor
         base["is_private"] = self.is_private

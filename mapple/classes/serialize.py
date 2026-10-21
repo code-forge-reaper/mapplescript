@@ -6,6 +6,5 @@ def serialize_node(node):
         return node.to_dict()
     return repr(node)
 
-
 def serialize_list(lst):
     return [serialize_node(item) for item in lst]

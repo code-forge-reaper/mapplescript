@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_list
 
 class NewInstance(Expression):
     def __init__(self, class_name, arguments, file, line, column):
@@ -21,5 +21,5 @@ class NewInstance(Expression):
     def to_dict(self):
         base = super().to_dict()
         base["class_name"] = self.class_name
-        base["arguments"] = _serialize_list(self.arguments)
+        base["arguments"] = serialize_list(self.arguments)
         return base

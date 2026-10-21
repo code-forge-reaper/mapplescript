@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_list
 
 class LambdaDecl(Expression):
     def __init__(self, parameters, body, file, line, column):
@@ -17,6 +17,6 @@ class LambdaDecl(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["parameters"] = _serialize_list(self.parameters)
-        base["body"] = _serialize_list(self.body)
+        base["parameters"] = serialize_list(self.parameters)
+        base["body"] = serialize_list(self.body)
         return base

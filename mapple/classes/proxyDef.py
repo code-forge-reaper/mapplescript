@@ -1,3 +1,5 @@
+from .statement import Statement
+
 class ProxyDef(Statement):
     def __init__(
         self,

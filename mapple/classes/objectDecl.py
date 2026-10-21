@@ -1,3 +1,6 @@
+from .serialize import serialize_list
+from .statement import Statement
+
 class ObjectDecl(Statement):
     def __init__(self, name, body, file, line, column):
         super().__init__("ObjectDecl", file, line, column)
@@ -14,6 +17,6 @@ class ObjectDecl(Statement):
     def to_dict(self):
         base = super().to_dict()
         base["name"] = self.name
-        base["body"] = _serialize_list(self.body)
+        base["body"] = serialize_list(self.body)
         return base
 

@@ -1,7 +1,6 @@
 from .serialize import serialize_node
 from .statement import Statement
 
-
 class ExpressionStmt(Statement):
     def __init__(self, expression, file, line, column):
         super().__init__("ExpressionStmt", file, line, column)

@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class LocalFuncDecl(Statement):
     def __init__(self, fn, file, line, column):
         super().__init__("LocalFuncDecl", file, line, column)
@@ -11,5 +14,5 @@ class LocalFuncDecl(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["function"] = _serialize_node(self.fn)
+        base["function"] = serialize_node(self.fn)
         return base

@@ -1,3 +1,6 @@
+from .serialize import serialize_node, serialize_list
+from .statement import Statement
+
 class UntilStmt(Statement):
     def __init__(self, condition, body, file, line, column):
         super().__init__("UntilStmt", file, line, column)
@@ -13,6 +16,6 @@ class UntilStmt(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["condition"] = _serialize_node(self.condition)
-        base["body"] = _serialize_list(self.body)
+        base["condition"] = serialize_node(self.condition)
+        base["body"] = serialize_list(self.body)
         return base

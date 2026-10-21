@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node, serialize_list
 
 class MethodCall(Expression):
     def __init__(self, object, method, arguments, file, line, column):
@@ -19,7 +19,7 @@ class MethodCall(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["object"] = _serialize_node(self.object)
+        base["object"] = serialize_node(self.object)
         base["method"] = self.method
-        base["arguments"] = _serialize_list(self.arguments)
+        base["arguments"] = serialize_list(self.arguments)
         return base

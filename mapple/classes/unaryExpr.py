@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class UnaryExpr(Expression):
     def __init__(self, operator, right, file, line, column):
@@ -16,5 +16,5 @@ class UnaryExpr(Expression):
     def to_dict(self):
         base = super().to_dict()
         base["operator"] = self.operator
-        base["right"] = _serialize_node(self.right)
+        base["right"] = serialize_node(self.right)
         return base

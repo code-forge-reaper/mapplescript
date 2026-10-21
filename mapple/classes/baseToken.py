@@ -1,6 +1,5 @@
 import json
 
-
 # --- AST Node Base Classes ---
 class Token:
     def __init__(self, type, value, file, line, column):

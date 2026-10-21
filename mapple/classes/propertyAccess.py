@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class PropertyAccess(Expression):
     def __init__(self, object, property, file, line, column):
@@ -15,6 +15,6 @@ class PropertyAccess(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["object"] = _serialize_node(self.object)
+        base["object"] = serialize_node(self.object)
         base["property"] = self.property
         return base

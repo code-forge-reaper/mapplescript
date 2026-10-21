@@ -1,6 +1,5 @@
 from .statement import Statement
 
-
 class UsingStmt(Statement):
     def __init__(self, name, file, line, column):
         super().__init__("UsingStmt", file, line, column)

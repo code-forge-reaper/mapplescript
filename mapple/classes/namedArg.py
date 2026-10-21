@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .expression import Expression
+
 class NamedArg(Expression):
     """Represents a named / keyword argument at a call site: name: value"""
 
@@ -15,5 +18,5 @@ class NamedArg(Expression):
     def to_dict(self):
         base = super().to_dict()
         base["name"] = self.name
-        base["value"] = _serialize_node(self.value)
+        base["value"] = serialize_node(self.value)
         return base

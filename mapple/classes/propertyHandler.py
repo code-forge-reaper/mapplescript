@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .statement import Statement
+
 class PropertyHandler(Statement):
     def __init__(self, name, getter, setter, file, line, column):
         super().__init__("PropertyHandler", file, line, column)
@@ -13,7 +16,7 @@ class PropertyHandler(Statement):
 
     def to_dict(self):
         base = super().to_dict()
-        base["name"] = _serialize_node(self.name)
-        base["getter"] = _serialize_node(self.getter)
-        base["setter"] = _serialize_node(self.setter)
+        base["name"] = serialize_node(self.name)
+        base["getter"] = serialize_node(self.getter)
+        base["setter"] = serialize_node(self.setter)
         return base

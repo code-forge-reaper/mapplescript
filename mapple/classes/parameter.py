@@ -1,3 +1,6 @@
+from .serialize import serialize_node
+from .baseToken import Token
+
 class Parameter(Token):
     def __init__(
         self,
@@ -28,6 +31,6 @@ class Parameter(Token):
         base = super().to_dict()
         base["name"] = self.name
         base["annotation_type"] = self.annotation_type
-        base["default"] = _serialize_node(self.default) if self.default else None
+        base["default"] = serialize_node(self.default) if self.default else None
         base["is_compact"] = self.is_compact
         return base

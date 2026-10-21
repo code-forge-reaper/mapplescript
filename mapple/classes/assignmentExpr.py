@@ -1,5 +1,5 @@
 from .expression import Expression
-
+from .serialize import serialize_node
 
 class AssignmentExpr(Expression):
     def __init__(self, target, value, operator, file, line, column):
@@ -16,7 +16,7 @@ class AssignmentExpr(Expression):
 
     def to_dict(self):
         base = super().to_dict()
-        base["target"] = _serialize_node(self.target)
-        base["value"] = _serialize_node(self.value)
+        base["target"] = serialize_node(self.target)
+        base["value"] = serialize_node(self.value)
         base["operator"] = self.operator
         return base
