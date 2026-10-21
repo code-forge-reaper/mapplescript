@@ -17,7 +17,7 @@ from .mappleclass import bind_parameters
 from .mappleenv import FuncWrapp
 from .typechecker import CUSTOM_TYPES
 from .typechecker import check_type
-from .tokenizer import Tokenizer
+from .parser import Parser
 from .mappleenv import Environment
 from .mappleclass import MappleClass
 from .helpers import Proxy, dprint
@@ -44,7 +44,7 @@ __no_variable_set__ = object()
 class Interpreter:
     source: str
     file: pathlib.Path
-    tk: Tokenizer
+    parser: Parser
     globals: Environment
     modules_loaded: dict[str, Any]  # pyright: ignore[reportExplicitAny]
     current_env: Environment | None
@@ -59,7 +59,7 @@ class Interpreter:
         c = pathlib.Path(file_path)
         self.file = c.expanduser().resolve()
         # self.file = os.path.abspath(file_path)
-        self.tk = Tokenizer(source, file_path)
+        self.parser = Parser(source, file_path)
         self.globals = Environment()
 
         self.modules_loaded = {}
@@ -107,16 +107,16 @@ class Interpreter:
             full_name = f"mapple.{kind}_handlers.{mod_name}"
             try:
                 mod = importlib.import_module(full_name)
-            except ImportError:
+            except ImportError as E:
                 candidate = handlers_dir / f"{mod_name}.py"
                 if not candidate.is_file():
                     raise ImportError(
                         f"Cannot load {kind} handler module {mod_name!r} "
                         f"(expected {candidate})"
-                    )
+                    ) from E
                 spec = importlib.util.spec_from_file_location(full_name, candidate)
                 if spec is None or spec.loader is None:
-                    raise ImportError(f"Cannot load {candidate}")
+                    raise ImportError(f"Cannot load {candidate}") from E
                 mod = importlib.util.module_from_spec(spec)
                 sys.modules[full_name] = mod
                 spec.loader.exec_module(mod)
@@ -208,7 +208,7 @@ class Interpreter:
 
     # --- Evaluation / Execution ---
     def interpret(self):
-        statements = self.tk.parse_block()
+        statements = self.parser.parse_block()
         try:
             self.execute_block(statements, self.globals)
         except BaseException as err:

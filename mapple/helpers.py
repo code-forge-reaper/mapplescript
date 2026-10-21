@@ -1,8 +1,7 @@
 from pprint import pprint
 import os
 
-from .tokenizer import Token
-from .nodes import MappleError
+from .nodes import Token, MappleError
 
 
 class Proxy:
