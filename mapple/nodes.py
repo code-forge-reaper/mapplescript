@@ -36,7 +36,7 @@ from .classes.exportStmt import ExportStmt
 from .classes.deferStmt import DeferStmt
 from .classes.varDeclStmt import VarDeclStmt
 from .classes.constDeclStmt import ConstDeclStmt
-from .classes.customTypeProp import CustomTypeProp
+from .classes.customTypeProp import CustomTypeProperty
 from .classes.customType import CustomType
 from .classes.customTypeDeclStmt import CustomTypeDeclStmt
 from .classes.assertStmt import AssertStmt

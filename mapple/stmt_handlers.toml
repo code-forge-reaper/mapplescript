@@ -1,0 +1,57 @@
+[usingStmt]
+UsingStmt = "using"
+[assert]
+AssertStmt = "Assert"
+[classDef]
+ClassDefinition = "ClassDef"
+
+[funcDef]
+FuncDecl = "FuncDef"
+LocalFuncDecl = "LocalFuncDef"
+
+[returnStmt]
+ReturnStmt = "Return"
+
+[switchStmt]
+SwitchStmt = "Switch"
+
+[scope]
+ScopeStmt = "Scope"
+
+[forStmt]
+ForEachStmt = "ForEach"
+ForStmt = "For"
+
+[until]
+UntilStmt = "Until"
+
+[While]
+WhileStmt = "While"
+
+[object]
+ObjectDecl = "Object"
+
+[ifStmt]
+IfStmt = "If"
+
+[withStmt]
+WithStmt = "With"
+
+[tryStmt]
+TryStmt = "Try"
+
+[export]
+ExportStmt = "export"
+
+[expr]
+ExpressionStmt = "Expr"
+
+[defer]
+DeferStmt = "defer"
+
+[contineStmt]
+ContineStmt = "Continue"
+
+[var]
+ConstDecl = "declare"
+VarDecl = "declare"
