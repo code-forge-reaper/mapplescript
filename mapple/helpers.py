@@ -45,6 +45,34 @@ class Proxy:
 _DEBUG_MODE = os.environ.get("DEBUG", "")
 
 
+def opToName(op: str):
+    def up(st: str):
+        s = list(st)
+        s[0] = s[0].upper()
+        return "__" + "".join(s)
+
+    matches = {
+        "+": up("add"),
+        "-=": up("setDec"),
+        "+=": up("setInc"),
+        "*=": up("setMul"),
+        "-": up("sub"),
+        "*": up("mul"),
+        "/": up("div"),
+        "%": up("mod"),
+        "^": up("xor"),
+        "<<": up("lshift"),
+        ">>": up("rshift"),
+        "==": up("eq"),
+        "!=": up("ne"),
+        "<": up("lt"),
+        ">": up("gt"),
+        "<=": up("le"),
+        ">=": up("ge"),
+    }
+    return matches.get(op, None)
+
+
 def dprint(msg: str, node: Token):
     if not _DEBUG_MODE:
         return

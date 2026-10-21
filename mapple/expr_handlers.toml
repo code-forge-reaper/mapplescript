@@ -1,0 +1,38 @@
+# this file follows the same thing as modules/module_info.toml
+
+[enum]
+EnumDef="Enum"
+
+[decorator]
+DecoratorExpr="Decorator"
+
+[Lambda] # this is mostly because lambda is a python keyword
+LambdaDecl = "Lambda"
+
+[newInstance]
+NewInstance = "New"
+
+[obj]
+ObjectLiteral="Object"
+
+[array]
+ArrayLiteral = "Array"
+ArrayAccess = "Access"
+
+[prop]
+PropertyAccess="Access"
+
+[method]
+MethodCall="Call"
+
+[func]
+FuncCall="Call"
+
+[unary]
+UnaryExpr="Unary"
+
+[binary]
+BinaryExpr="Binary"
+
+[assignment]
+AssignmentExpr = "Assign"
