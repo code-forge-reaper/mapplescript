@@ -3,7 +3,7 @@ from . import tokenizer
 from . import runtime
 from . import mappleenv
 from . import mappleclass
-from . import nodes
+from . import classes
 from . import conf
 
 __all__ = [
@@ -12,6 +12,6 @@ __all__ = [
     "runtime",
     "mappleenv",
     "mappleclass",
-    "nodes",
+    "classes",
     "conf",
 ]

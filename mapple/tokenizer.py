@@ -1,5 +1,10 @@
 import pathlib
-from .nodes import MappleError, Token
+
+from mapple.classes.mappleError import MappleError
+from mapple.classes.baseToken import Token
+
+# from .classes import MappleError, Token
+
 
 # TODO: convert each "if" to a function call
 # so it's actually decent

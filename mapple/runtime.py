@@ -21,6 +21,7 @@ from .parser import Parser
 from .mappleenv import Environment
 from .mappleclass import MappleClass
 from .helpers import Proxy, dprint
+
 from .nodes import (
     ArrayAccess,
     ArrayLiteral,
