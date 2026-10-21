@@ -111,7 +111,7 @@ class MappleClass:
     def get_public_instance_members(self, instance):
         result = {}
         # Properties (skip private)
-        for name in self.instance_properties.keys():
+        for name in self.instance_properties:
             if name not in self._private_properties:
                 value = (
                     instance[name]
@@ -120,7 +120,7 @@ class MappleClass:
                 )
                 result[name] = value
         # Methods (skip private)
-        for name in self.instance_methods.keys():
+        for name in self.instance_methods:
             if name not in self._private_methods:
                 value = (
                     instance[name]
@@ -295,7 +295,7 @@ class MappleClass:
                                             raise MappleError(
                                                 None,
                                                 f"Error calling super Python method '{aname}': {e}",
-                                            )
+                                            ) from e
 
                                     super_obj[attr_name] = python_super_call
                     method_env.define("Base", super_obj)
@@ -366,7 +366,7 @@ class MappleClass:
                     except Exception as e:
                         raise ValueError(
                             f"Error calling superclass Python constructor: {e}",
-                        )
+                        ) from e
 
                 constructor_env.define("Base", super_constructor_call)
             else:

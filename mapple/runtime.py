@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+# pyright: reportUnknownVariableType=false
+# pyright: reportUnknownMemberType=false
+
+import sys
+import pathlib
+
+from typing import Any
+import uuid
+from collections.abc import Iterable, Callable, Sequence, Mapping
+import copy
+
 from .mappleclass import bind_parameters
 from .mappleenv import FuncWrapp
 from .typechecker import CUSTOM_TYPES
@@ -7,22 +18,28 @@ from .tokenizer import Tokenizer
 from .mappleenv import Environment
 from .mappleclass import MappleClass
 from .helpers import Proxy, dprint
-from .nodes import *
-import sys
-import pathlib
-
-
-import uuid
-from collections.abc import Iterable, Callable, Sequence, Mapping
-
-import copy
+from .nodes import (
+    ArrayAccess,
+    ArrayLiteral,
+    AssignmentExpr,
+    BreakFlow,
+    ContinueFlow,
+    ControlFlow,
+    Identifier,
+    Literal,
+    MappleError,
+    MethodDefinition,
+    PropertyAccess,
+    PropertyDefinition,
+    ReturnFlow,
+)
 
 
 __no_variable_set__ = object()
 
 
-def opToName(op):
-    def up(st):
+def opToName(op: str):
+    def up(st: str):
         s = list(st)
         s[0] = s[0].upper()
         return "__" + "".join(s)
@@ -50,7 +67,19 @@ def opToName(op):
 
 
 class Interpreter:
-    def __init__(self, source, file_path):
+    source: str
+    file: pathlib.Path
+    tk: Tokenizer
+    globals: Environment
+    modules_loaded: dict[str, Any]  # pyright: ignore[reportExplicitAny]
+    current_env: Environment | None
+    current_class_stack: list[Any]  # pyright: ignore[reportExplicitAny]
+    callStack: list[Any]  # pyright: ignore[reportExplicitAny]
+    errorStack: list[Any]  # pyright: ignore[reportExplicitAny]
+    _stmt_handlers: dict[str, Callable]  # pyright: ignore[reportMissingTypeArgument]
+    _expr_handlers: dict[str, Callable]  # pyright: ignore[reportMissingTypeArgument]
+
+    def __init__(self, source: str, file_path: str | pathlib.Path):
         self.source = source
         c = pathlib.Path(file_path)
         self.file = c.expanduser().resolve()
@@ -228,7 +257,7 @@ class Interpreter:
                 # For declarations, export the declared name
                 name = inner.name
                 if name in exports_dict:
-                    raise MappleError(stmt, "cannot re-export: {}".format(name))
+                    raise MappleError(stmt, f"cannot re-export: {name}")
                 value = env.get(name).value
                 exports_dict[name] = value
 
@@ -240,7 +269,7 @@ class Interpreter:
                         key = prop["key"]
                         val_expr = prop["value"]
                         if key in exports_dict:
-                            raise MappleError(stmt, "cannot re-export: {}".format(key))
+                            raise MappleError(stmt, f"cannot re-export: {name}")
                         if val_expr.type == "Identifier":
                             val = env.get(val_expr.name).value
                         else:
@@ -250,7 +279,7 @@ class Interpreter:
                     # export a → export the variable 'a'
                     name = expr.name
                     if name in exports_dict:
-                        raise MappleError(stmt, "cannot re-export: {}".format(name))
+                        raise MappleError(stmt, f"cannot re-export: {name}")
                     val = env.get(name).value
                     exports_dict[name] = val
                 else:
@@ -306,9 +335,9 @@ class Interpreter:
             except Exception as e:
                 handled = False
                 if getattr(expression_val, "__exit__", None):
-                    handled = expression_val.__exit__(
+                    handled = expression_val.__exit__(  # pyright: ignore[reportAttributeAccessIssue]
                         type(e), e, e.__traceback__
-                    )  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+                    )
                 elif isinstance(expression_val, dict) and "__exit__" in expression_val:
                     handled = expression_val["__exit__"](type(e), e, e.__traceback__)
 
@@ -316,9 +345,9 @@ class Interpreter:
                     raise
             else:
                 if getattr(expression_val, "__exit__", None):
-                    expression_val.__exit__(
+                    expression_val.__exit__(  # pyright: ignore[reportAttributeAccessIssue]
                         None, None, None
-                    )  # pyright: ignore[reportAttributeAccessIssue]
+                    )
                 elif isinstance(expression_val, dict) and "__exit__" in expression_val:
                     expression_val["__exit__"](None, None, None)
             return returnedVal
@@ -430,18 +459,18 @@ class Interpreter:
                 result = self.execute_block(stmt.body, Environment(env))
                 if isinstance(result, BreakFlow):
                     break
-                elif isinstance(result, ReturnFlow):
+                if isinstance(result, ReturnFlow):
                     return result
-                elif isinstance(result, ContinueFlow):
+                if isinstance(result, ContinueFlow):
                     continue
         elif stmt.type == "UntilStmt":
             while not self.evaluate_expr(stmt.condition, env):
                 result = self.execute_block(stmt.body, Environment(env))
                 if isinstance(result, BreakFlow):
                     break
-                elif isinstance(result, ReturnFlow):
+                if isinstance(result, ReturnFlow):
                     return result
-                elif isinstance(result, ContinueFlow):
+                if isinstance(result, ContinueFlow):
                     continue
         elif stmt.type == "ForEachStmt":
             list_val = self.evaluate_expr(stmt.list, env)
@@ -458,9 +487,9 @@ class Interpreter:
                 result = self.execute_block(stmt.body, loop_env)
                 if isinstance(result, BreakFlow):
                     break
-                elif isinstance(result, ReturnFlow):
+                if isinstance(result, ReturnFlow):
                     return result
-                elif isinstance(result, ContinueFlow):
+                if isinstance(result, ContinueFlow):
                     continue
         elif stmt.type == "ForStmt":
             start = self.evaluate_expr(stmt.start, env)
@@ -486,9 +515,9 @@ class Interpreter:
                     result = self.execute_block(stmt.body, loop_env)
                     if isinstance(result, BreakFlow):
                         break
-                    elif isinstance(result, ReturnFlow):
+                    if isinstance(result, ReturnFlow):
                         return result
-                    elif isinstance(result, ContinueFlow):
+                    if isinstance(result, ContinueFlow):
                         current_val += step
                         continue
                     current_val += step
@@ -499,9 +528,9 @@ class Interpreter:
                     result = self.execute_block(stmt.body, loop_env)
                     if isinstance(result, BreakFlow):
                         break
-                    elif isinstance(result, ReturnFlow):
+                    if isinstance(result, ReturnFlow):
                         return result
-                    elif isinstance(result, ContinueFlow):
+                    if isinstance(result, ContinueFlow):
                         continue
         elif stmt.type == "ScopeStmt":
             n_env = Environment(env)
@@ -730,7 +759,7 @@ class Interpreter:
         if isinstance(target_expr, Identifier):
             # For simple identifiers, the base is the environment and the key is the identifier name
             return {"base": env, "final_key": target_expr.name}
-        elif isinstance(target_expr, ArrayAccess):
+        if isinstance(target_expr, ArrayAccess):
             # Recursively evaluate the object part to get the actual array/object
             base_object = self.evaluate_expr(target_expr.object, env)
             index = self.evaluate_expr(target_expr.index, env)
@@ -751,7 +780,7 @@ class Interpreter:
                     f"List/dict index must be a number or string for assignment. Got: {type(index).__name__}",
                 )
             return {"base": base_object, "final_key": index}
-        elif isinstance(target_expr, PropertyAccess):
+        if isinstance(target_expr, PropertyAccess):
             # Recursively evaluate the object part to get the actual object
             base_object = self.evaluate_expr(target_expr.object, env)
             key = target_expr.property  # Property name is a string
@@ -765,15 +794,13 @@ class Interpreter:
             if isinstance(base_object, Environment):
                 return {"base": base_object, "final_key": key}
             # If the base object is a MappleScript instance (a Python dict), assign to its key.
-            elif isinstance(base_object, dict):
+            if isinstance(base_object, dict):
                 return {"base": base_object, "final_key": key}
             # For other Python objects, assume it's a regular attribute access.
-            else:
-                return {"base": base_object, "final_key": key}
-        else:
-            raise MappleError(
-                target_expr, "Invalid assignment target type: " + target_expr.type
-            )
+            return {"base": base_object, "final_key": key}
+        raise MappleError(
+            target_expr, "Invalid assignment target type: " + target_expr.type
+        )
 
     def get_target_type(self, target, env):
         """Resolve the expected type for an assignment target (Identifier or nested PropertyAccess)."""
@@ -805,10 +832,10 @@ class Interpreter:
 
         if expr.type == "Literal":
             return expr.value
-        elif expr.type == "Identifier":
+        if expr.type == "Identifier":
             return env.get(expr.name, expr).value
 
-        elif expr.type == "AssignmentExpr":
+        if expr.type == "AssignmentExpr":
             target = expr.target
             op = expr.operator
 
@@ -822,7 +849,9 @@ class Interpreter:
             # === Compound assignment handling ===
             if op != "=":
                 if isinstance(base, Environment):
-                    current_value = base.get(final_key, target).value
+                    current_value = base.get(
+                        final_key, target
+                    ).value  # pyright: ignore[reportArgumentType]
                 elif isinstance(base, Mapping):
                     # dict and other mappings (supports str/int keys)
                     try:
@@ -831,18 +860,22 @@ class Interpreter:
                         raise MappleError(
                             target,
                             f"Cannot read key '{final_key}' for compound assignment: {e}",
-                        )
+                        ) from e
                 elif isinstance(base, Sequence) or hasattr(base, "__getitem__"):
                     # lists, tuples, strings, custom indexable objects
                     try:
-                        current_value = base[final_key]
+                        current_value = base[
+                            final_key
+                        ]  # pyright: ignore[reportCallIssue, reportArgumentType, reportIndexIssue]
                     except (IndexError, KeyError, TypeError) as e:
                         raise MappleError(
                             target,
                             f"Cannot read index/key '{final_key}' for compound assignment: {e}",
-                        )
+                        ) from e
                 else:
-                    current_value = getattr(base, final_key, None)
+                    current_value = getattr(
+                        base, final_key, None
+                    )  # pyright: ignore[reportCallIssue, reportArgumentType]
                 if isinstance(current_value, Proxy):
                     if not current_value.get:
                         raise MappleError(
@@ -863,7 +896,9 @@ class Interpreter:
                             f"If you wanted to repeat '{assigned_value}' {current_value} times, "
                             f"you'd do '\"{assigned_value}\" * {current_value}'",
                         )
-                    final_value_to_assign = current_value * assigned_value
+                    final_value_to_assign = (
+                        current_value * assigned_value
+                    )  # pyright: ignore[reportOperatorIssue]
                 elif op == "/=":
                     if assigned_value == 0:
                         raise MappleError(
@@ -901,7 +936,9 @@ class Interpreter:
 
             else:  # normal / property / nested assignment
                 if isinstance(base, Environment):
-                    var = base.get(final_key, target)
+                    var = base.get(
+                        final_key, target
+                    )  # pyright: ignore[reportArgumentType]
                     if var.type_annotation:
                         check_type(var.type_annotation, final_value_to_assign, target)
                     base.assign(final_key, final_value_to_assign, target)
@@ -988,28 +1025,32 @@ class Interpreter:
                 else:
                     # Python object
                     try:
-                        setattr(base, final_key, final_value_to_assign)
-                    except (AttributeError, TypeError):
+                        setattr(
+                            base, final_key, final_value_to_assign
+                        )  # pyright: ignore[reportArgumentType]
+                    except (AttributeError, TypeError) as E:
                         if isinstance(base, (dict, list)) or hasattr(
                             base, "__setitem__"
                         ):
-                            base[final_key] = final_value_to_assign
+                            base[
+                                final_key
+                            ] = final_value_to_assign  # pyright: ignore[reportCallIssue, reportArgumentType, reportIndexIssue]
                         else:
                             raise MappleError(
                                 target,
                                 f"Cannot assign to property '{final_key}' of object of type {type(base).__name__}.",
-                            )
+                            ) from E
 
             return final_value_to_assign
 
-        elif expr.type == "BinaryExpr":
+        if expr.type == "BinaryExpr":
             dprint("BinOp", expr)
             if expr.operator == "&&":
                 f = self.evaluate_expr(expr.left, env)
                 if not f:
                     return f
                 return self.evaluate_expr(expr.right, env)
-            elif expr.operator == "||":
+            if expr.operator == "||":
                 f = self.evaluate_expr(expr.left, env)
                 if f:
                     return f
@@ -1032,30 +1073,26 @@ class Interpreter:
             # Normal binary operations
             if expr.operator == "+":
                 return left + right
-            elif expr.operator == "|":
+            if expr.operator == "|":
                 return left | right
-            elif expr.operator == "&":
+            if expr.operator == "&":
                 return left & right
-            elif expr.operator == "%":
+            if expr.operator == "%":
                 if isinstance(left, str):
                     if isinstance(right, list):
-                        left = left.format(*right)
-                    elif isinstance(right, dict):
-                        left = left.format(**right)
-                    else:
-                        raise MappleError(
-                            expr,
-                            "'%' formatting requires a list or object on the right, got {}".format(
-                                type(right).__name__
-                            ),
-                        )
-                    return left
+                        return left.format(*right)
+                    if isinstance(right, dict):
+                        return left.format(**right)
+                    raise MappleError(
+                        expr,
+                        f"'%' formatting requires a list or object on the right, got {type(right).__name__}",
+                    )
                 return left % right
-            elif expr.operator == "^":
+            if expr.operator == "^":
                 return left ^ right
-            elif expr.operator == "-":
+            if expr.operator == "-":
                 return left - right
-            elif expr.operator == "*":
+            if expr.operator == "*":
                 if isinstance(left, (int, float)) and not isinstance(
                     right, (int, float)
                 ):
@@ -1063,40 +1100,40 @@ class Interpreter:
                         expr,
                         f"If you wanted to repeat '{right}' {left} times, you'd do '\"{right}\" * {left}'",
                     )
-                return left * right
-            elif expr.operator == "**":
+                return left * right  # pyright: ignore[reportOperatorIssue]
+            if expr.operator == "**":
                 return left**right
-            elif expr.operator == "/":
+            if expr.operator == "/":
                 if right == 0:
                     raise MappleError(expr, "Division by zero is not allowed.")
                 return left / right
-            elif expr.operator == "==":
+            if expr.operator == "==":
                 return left == right
-            elif expr.operator == "!=":
+            if expr.operator == "!=":
                 return left != right
-            elif expr.operator == "<":
+            if expr.operator == "<":
                 return left < right
-            elif expr.operator == ">":
+            if expr.operator == ">":
                 return left > right
-            elif expr.operator == ">>":
+            if expr.operator == ">>":
                 return left >> right
-            elif expr.operator == "<<":
+            if expr.operator == "<<":
                 return left << right
-            elif expr.operator == "<=":
+            if expr.operator == "<=":
                 return left <= right
-            elif expr.operator == "between":
+            if expr.operator == "between":
                 if not isinstance(right, (list, tuple)) or len(right) != 2:
                     raise MappleError(expr, "'between' requires a range [low, high]")
                 return right[0] <= left <= right[1]
-            elif expr.operator == ">=":
+            if expr.operator == ">=":
                 return left >= right
-            elif expr.operator == "->":
+            if expr.operator == "->":
                 if not callable(right):
                     raise MappleError(
                         expr, "right side of pipe expr must be a function"
                     )
                 return right(left)
-            elif expr.operator == "=>":
+            if expr.operator == "=>":
                 if not callable(right):
                     raise MappleError(
                         expr, "right side of pipe expr must be a function"
@@ -1111,8 +1148,7 @@ class Interpreter:
                 else:
                     raise MappleError(expr, "=> only works on arrays or objects")
                 return clone
-            else:
-                raise MappleError(expr, f"Unknown binary operator: {expr.operator}")
+            raise MappleError(expr, f"Unknown binary operator: {expr.operator}")
 
         elif expr.type == "UnaryExpr":
             right = self.evaluate_expr(expr.right, env)
@@ -1123,20 +1159,15 @@ class Interpreter:
                         f"Unary '-' operator can only be applied to numbers. Got: {type(right).__name__}",
                     )
                 return -right
-            elif expr.operator == "!":
+            if expr.operator == "!":
                 return not right
-            elif expr.operator == "#":
-                if isinstance(right, (list, str, dict)):
+            if expr.operator == "#":
+                if isinstance(right, (list, str, dict)) or hasattr(right, "__len__"):
                     return len(right)
-                elif hasattr(right, "__len__"):
-                    return len(right)
-                else:
-                    raise MappleError(
-                        expr, f"Unary '#' cannot be applied to {type(right).__name__}"
-                    )
-
-            else:
-                raise MappleError(expr, f"Unknown unary operator: {expr.operator}")
+                raise MappleError(
+                    expr, f"Unary '#' cannot be applied to {type(right).__name__}"
+                )
+            raise MappleError(expr, f"Unknown unary operator: {expr.operator}")
 
         elif expr.type == "FuncCall":
             # Evaluate the callee expression (Identifier, ArrayAccess, etc.)
@@ -1169,7 +1200,7 @@ class Interpreter:
                         v = self.evaluate_expr(arg, env)
                         args.append(v)
                 return callee(*args, **kwargs)
-            except Exception as E:
+            except Exception as E:  # pyright: ignore[reportConstantRedefinition]
                 self.errorStack.append(
                     " " * len(self.callStack)
                     + f"- {expr.file}:{expr.line}:{expr.column}: "
@@ -1243,7 +1274,9 @@ class Interpreter:
             else:
                 try:
                     if hasattr(fn, "__DefiningClass"):
-                        self.current_class_stack.append(fn.__DefiningClass)
+                        self.current_class_stack.append(
+                            fn.__DefiningClass
+                        )  # pyright: ignore[reportAny, reportFunctionMemberAccess]
                     result = fn(*args, **kwargs)
                 finally:
                     if hasattr(fn, "__DefiningClass"):
@@ -1271,7 +1304,9 @@ class Interpreter:
             ## we should check length, and see if it can actually get the value
             ## otherwise, do what lua does
             try:
-                return arr[index]
+                return arr[
+                    index
+                ]  # pyright: ignore[reportCallIssue, reportArgumentType]
             except (IndexError, KeyError):
                 return None
                 # raise MappleError(
@@ -1316,11 +1351,11 @@ class Interpreter:
             # if isinstance(obj, dict) and expr.property in obj:
             #    return obj[expr.property]
             # If obj is an Environment (e.g., 'self' within a MappleScript method)
-            elif isinstance(obj, Environment):
+            if isinstance(obj, Environment):
                 # FIX: Get value from var
                 return obj.get(expr.property, expr).value
             # For regular Python objects (e.g., exposed modules, native types)
-            elif hasattr(obj, expr.property):
+            if hasattr(obj, expr.property):
                 return getattr(obj, expr.property)
 
             return None
@@ -1434,10 +1469,9 @@ class Interpreter:
         elif expr.type == "EnumDef":
             v = Environment()  # no sense copying env here
             v.values = {}
-            for i in range(len(expr.values)):
+            for i in enumerate(expr.values):
                 v.define(expr.values[i], i)
 
             v.lock()
             return v
-        else:
-            raise MappleError(expr, f"Unknown expression type: {expr}")
+        raise MappleError(expr, f"Unknown expression type: {expr}")

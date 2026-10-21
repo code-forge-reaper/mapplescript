@@ -107,10 +107,9 @@ class Environment:
     def has(self, name: str):
         if name in self.values:
             return True
-        elif self.parent and not self.localsOnly:
+        if self.parent and not self.localsOnly:
             return self.parent.has(name)
-        else:
-            return False
+        return False
 
     def assign(self, name: str, value, tok):
         if self.locked:
@@ -126,32 +125,31 @@ class Environment:
             check_type(var.type_annotation, value, tok)
             var.value = value
 
-        elif self.parent:
+        if self.parent:
             if self.localsOnly:
                 raise MappleError(
                     tok,
                     f"Cannot modify variable '{name}', since it is not created in this scope",
                 )
             self.parent.assign(name, value, tok)
-        else:
-            raise MappleError(tok, f"Undefined variable {name}")
+        raise MappleError(tok, f"Undefined variable {name}")
 
     def get(self, name: str, tok=None):
         if name in self.values:
             return self.values[name]
-        elif self.parent:
+        if self.parent:
             return self.parent.get(name, tok)
-        else:
-            if tok:
-                raise MappleError(tok, f"Undefined variable {name}")
-            raise Exception(
-                f"Undefined variable {name}"
-            )  # Fallback for internal errors without token
+
+        if tok is not None:
+            raise MappleError(tok, f"Undefined variable {name}")
+        raise NameError(
+            f"Undefined variable {name}"
+        )  # Fallback for internal errors without token
 
     def __repr__(self):
         v = {}
-        for k in self.values:
-            vv = self.values[k]
-            if k not in ["true", "false"]:
-                v[k] = vv
+
+        for name, value in self.values.items():
+            if name not in ["true", "false"]:
+                v[name] = value
         return str(v)

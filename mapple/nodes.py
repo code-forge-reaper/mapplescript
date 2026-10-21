@@ -1234,8 +1234,7 @@ class UsingStmt(Statement):
         if isinstance(self.name, list):
             names = "[" + ", ".join(f"'{n}'" for n in self.name) + "]"
             return f"UsingStmt(names={names})"
-        else:
-            return f"UsingStmt(name='{self.name}')"
+        return f"UsingStmt(name='{self.name}')"
 
     def to_dict(self):
         base = super().to_dict()
